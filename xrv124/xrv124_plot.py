@@ -7,8 +7,6 @@ import easygui
 ###############################################
 GANTRY = list( range(180,-181,-30) )
 ENERGY = [245,240]+list( range(230,69,-10) )
-###PIXEL_SIZE = 0.1  ##mm 
-
 #https://matplotlib.org/gallery/lines_bars_and_markers/markevery_demo.html#sphx-glr-gallery-lines-bars-and-markers-markevery-demo-py
 ###############################################
 

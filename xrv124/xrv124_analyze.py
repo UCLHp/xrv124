@@ -20,7 +20,8 @@ THRESHOLD = 50.0
 
 
 def get_image_data(filename):
-    """Return image dims and numpy array of spot image: [x,y,image]"""
+    """Return image numpy array of image plus pitch
+    """
     
     spotdata = open(filename).readlines()
 
@@ -63,7 +64,7 @@ def get_equivalent_diameter( entryspot ):
 
 
 def analyse_shifts(directory, beams, GANTRY, ENERGY):
-    """Analyse full acquisition data set
+    """Analyse spot shifts in x,y of image coordinates
 
     This means all beams were captured at all GAs and energies.
     FUNCTION WILL NOT WORK IS THERE IS MISSING DATA
@@ -145,8 +146,8 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
 
 
 def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
-    """Analyse FULL acquisition data set for entry spot "diameter" in csv file
-    FUNCTION WILL NOT WORK IS THERE IS MISSING DATA
+    """Retrieve ntry spot "diameter" from csv file
+    FUNCTION WILL NOT WORK IF THERE IS MISSING DATA
     """
     results = {}
     cnt = -1
@@ -169,6 +170,7 @@ def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
 
 
 def gaus(x,a,x0,sigma):
+    """Gaussian function for fitting"""
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
 
 
@@ -218,10 +220,7 @@ def sigma_from_gaussian_lmfit(profile, pitch):
 
 
 def sigma_angled_profile(spot_img, img_angle, pitch):
-    """Returns the sigma from a Gaussian fit along x and y axes
-    in the SPOT COORDINATE system.
-
-    DOES LMFIT DO A BETTER JOB AT FITTING?
+    """Returns sigma of spot from a profile taken at img_angle
     """
 
     nrows = spot_img.shape[0]
@@ -247,8 +246,8 @@ def sigma_angled_profile(spot_img, img_angle, pitch):
 
 
 def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
-    """
-    Plots showing spot sizes at each gantry angle
+    """Returns sigma of spot in x,y of SPOT COORDINATE system 
+    (from a profile taken at specified angle in IMAGE coords)
     """
 
     ## CAN I SIMPLY USE PITCH IF TAKING PROFILE AT AN ANGLE???????????
