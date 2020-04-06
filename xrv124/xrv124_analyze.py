@@ -12,11 +12,7 @@ from lmfit import Model
 from lmfit import Parameters
 
 
-# Define GAs and energies used (As at Christie)
-#GANTRY = list( range(180,-181,-30) )
-#ENERGY = [245,240]+list( range(230,69,-10) )
-#print("GANTRY analyze={}".format(GANTRY))
-#print("ENERGY analyze={}".format(ENERGY)) 
+
 
 # % threshold for finding centre of shadow in entry-exit image
 THRESHOLD = 50.0   
@@ -27,6 +23,9 @@ def get_image_data(filename):
     """Return image dims and numpy array of spot image: [x,y,image]"""
     
     spotdata = open(filename).readlines()
+
+    # Image pitch is in first line
+    pitch = float( spotdata[0].split("Pitch:,")[1].split(",")[0].strip() )
 
     # 3rd line contains image dimension - ALWAYS??      ##TODO: CHECK CORRECT FOR NON-SQUARE IMAGES
     nrows = int( spotdata[2].split(",")[1].strip() )    # or is this x dim => no. columns?
@@ -41,8 +40,7 @@ def get_image_data(filename):
         #... but have I? Im just converting strings to floats here...
         spotimage[row-3] = np.array( spotdata[row].split(",") ).astype(float)
 
-    ##return np.transpose(spotimage)
-    return spotimage
+    return spotimage, pitch
 
 
 
@@ -80,16 +78,16 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             # key for storing result
             k = "GA"+str(ga)+"E"+str(en)
 
-            entry = get_image_data( join(directory,beams[cnt])+".csv" ) 
-            exit  = get_image_data( join(directory,beams[cnt])+".txt" )
+            entry, pitch_en = get_image_data( join(directory,beams[cnt])+".csv" ) 
+            exit, pitch_ex  = get_image_data( join(directory,beams[cnt])+".txt" )
+    
+            if pitch_en!=pitch_ex:
+                print("WARNING: Pitch of entry and exit spots differs!!")
+                #TODO: deal with unequal entry/exit spot sizes
+            pitch = pitch_en
 
             nrows = entry.shape[0]
             ncols = entry.shape[1]
-
-            #TODO read in pitch
-            pitch = 0.1
-            #TODO: deal with unequal entry/exit spot sizes
-
 
             '''plt.imshow( entry )
             plt.title( "Entry spot" )
@@ -260,17 +258,17 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
             k="GA"+str(ga)+"E"+str(en) 
             print("{},{}".format(beams[cnt],k))
 
-            entry = get_image_data( join(directory,beams[cnt])+".csv" ) 
+            entry, pitch = get_image_data( join(directory,beams[cnt])+".csv" ) 
 
             # Angle profile = 0 at GA=0 SPOT and BEV and IMAGE axes all match
             # hence implies x-profile in IMAGE COORDS but y profile in SPOT COORDS (AT GA=0)
-            x_sigma = sigma_angled_profile_lmfit( entry, -ga, PITCH )
-            y_sigma = sigma_angled_profile_lmfit( entry, 90-ga,    PITCH )
+            x_sigma = sigma_angled_profile_lmfit( entry, -ga, pitch )
+            y_sigma = sigma_angled_profile_lmfit( entry, 90-ga,  pitch )
 
             ## USE THESE FOR FIXED IMAGE COORD PROFILES
             #if coords.lower()=="image":
-                #x_sigma = sigma_angled_profile_lmfit( entry, x, y, 0, PITCH )
-                #y_sigma = sigma_angled_profile_lmfit( entry, x, y, 90,   PITCH )
+                #x_sigma = sigma_angled_profile_lmfit( entry, x, y, 0, pitch )
+                #y_sigma = sigma_angled_profile_lmfit( entry, x, y, 90, pitch )
          
             if(x_sigma>8 or y_sigma>8):
                 print("x_sigma={}, y_sigma={}".format(x_sigma, y_sigma) )
