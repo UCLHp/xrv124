@@ -24,7 +24,7 @@ def get_image_data(filename):
     
     spotdata = open(filename).readlines()
 
-    # Image pitch is in first line
+    # Image pitch (pixel width) is in first line
     pitch = float( spotdata[0].split("Pitch:,")[1].split(",")[0].strip() )
 
     # 3rd line contains image dimension - ALWAYS??      ##TODO: CHECK CORRECT FOR NON-SQUARE IMAGES
@@ -168,41 +168,20 @@ def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
 
 
 
-
 def gaus(x,a,x0,sigma):
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
 
 
 
-def sigma_angled_profile_lmfit(spot_img, img_angle, pitch):
-    """Returns the sigma from a Gaussian fit along x and y axes
-    in the SPOT COORDINATE system.
 
-    DOES LMFIT DO A BETTER JOB AT FITTING?
-    """
+def sigma_from_gaussian_lmfit(profile, pitch):
+    """Return sigma from Gaussian fit with lmfit"""
 
-    nrows = spot_img.shape[0]
-    ncols = spot_img.shape[1]    
+    # TODO: this needs to be robust; catch poor fits; choose better starting points
 
-
-    # DEFINE START AND END OF PROFILE THROUGH CENTRE
-    r = min([nrows,ncols])//2 - 20
-
-    strt_x = ncols//2 + r*cos(radians(img_angle))
-    strt_y = nrows//2 - r*sin(radians(img_angle))
-    end_x = ncols//2 - r*cos(radians(img_angle))
-    end_y = nrows//2 + r*sin(radians(img_angle))
-
-    # Must give start and destination points in (y,x) order
-    startpt = (strt_y,strt_x)
-    endpt   = (end_y,end_x)
-    
-    profile = profile_line( spot_img, startpt, endpt  )
-
-    ## Sigma from Gaussian fit
     profile_max = max(profile)
     xvals = np.array( range(len(profile))  ) * pitch     ##PITCH
-    yvals = np.array(profile) / profile_max       ## NORM
+    yvals = np.array(profile) / profile_max              ## NORM
 
     # Guess for starting values
     n = len(xvals)
@@ -213,9 +192,7 @@ def sigma_angled_profile_lmfit(spot_img, img_angle, pitch):
     #Make model
     model = Model( gaus )
 
-    ## If we want unrestricted parameters
-    #params = model.make_params(R0=R0_init, sigma=sigma_init, epsilon=epsilon_init)
-    # Or add lower bound of 0 to epsilon
+    # Set initial guess
     params=Parameters()
     params.add("a", value=0.972)
     params.add("x0", value=mean_init)
@@ -225,7 +202,7 @@ def sigma_angled_profile_lmfit(spot_img, img_angle, pitch):
     fitresult = model.fit(yvals, params, x=xvals,method="powell")
     best_sigma = abs(fitresult.params["sigma"].value)
 
-    # Try and catch obvious fitting erros with a second attempt:
+    # Try and catch obvious fitting erros with a second attempt: #TODO: DO PROPERLY WITH A GOODNESS OF FIT PARAM
     if( best_sigma<2.5 or best_sigma>8.0):
         #assume error and try different initial values
         print("  !! sig={}: trying second fit".format(best_sigma))
@@ -235,8 +212,36 @@ def sigma_angled_profile_lmfit(spot_img, img_angle, pitch):
         best_sigma = abs(fitresult.params["sigma"].value)
         print("  !! sig={}: IN SECOND ATTEMPT".format(best_sigma))
 
-    ###########################################################
     return best_sigma
+
+
+
+
+def sigma_angled_profile(spot_img, img_angle, pitch):
+    """Returns the sigma from a Gaussian fit along x and y axes
+    in the SPOT COORDINATE system.
+
+    DOES LMFIT DO A BETTER JOB AT FITTING?
+    """
+
+    nrows = spot_img.shape[0]
+    ncols = spot_img.shape[1]    
+
+    # DEFINE START AND END OF PROFILE THROUGH CENTRE
+    r = min([nrows,ncols])//2 - 20
+    strt_x = ncols//2 + r*cos(radians(img_angle))
+    strt_y = nrows//2 - r*sin(radians(img_angle))
+    end_x = ncols//2 - r*cos(radians(img_angle))
+    end_y = nrows//2 + r*sin(radians(img_angle))
+
+    # Must give start and destination points in (y,x) order
+    startpt = (strt_y,strt_x)
+    endpt   = (end_y,end_x)
+    
+    profile = profile_line(spot_img, startpt, endpt)
+
+    sigma = sigma_from_gaussian_lmfit(profile, pitch)
+    return sigma
 
 
 
@@ -246,8 +251,7 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
     Plots showing spot sizes at each gantry angle
     """
 
-    PITCH = 0.1  
-    ## CAN I SIMPLY USE PITCH LIKE THIS IF TAKING PROFILE AT AN ANGLE???????????
+    ## CAN I SIMPLY USE PITCH IF TAKING PROFILE AT AN ANGLE???????????
 
     results = {}
     cnt=-1
@@ -262,13 +266,13 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
             # Angle profile = 0 at GA=0 SPOT and BEV and IMAGE axes all match
             # hence implies x-profile in IMAGE COORDS but y profile in SPOT COORDS (AT GA=0)
-            x_sigma = sigma_angled_profile_lmfit( entry, -ga, pitch )
-            y_sigma = sigma_angled_profile_lmfit( entry, 90-ga,  pitch )
+            x_sigma = sigma_angled_profile( entry, -ga, pitch )
+            y_sigma = sigma_angled_profile( entry, 90-ga,  pitch )
 
             ## USE THESE FOR FIXED IMAGE COORD PROFILES
             #if coords.lower()=="image":
-                #x_sigma = sigma_angled_profile_lmfit( entry, x, y, 0, pitch )
-                #y_sigma = sigma_angled_profile_lmfit( entry, x, y, 90, pitch )
+                #x_sigma = sigma_angled_profile( entry, x, y, 0, pitch )
+                #y_sigma = sigma_angled_profile( entry, x, y, 90, pitch )
          
             if(x_sigma>8 or y_sigma>8):
                 print("x_sigma={}, y_sigma={}".format(x_sigma, y_sigma) )
@@ -277,9 +281,6 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
             results[k] = (x_sigma, y_sigma)
 
-
-    #with open("results_sigmas_spotcoords.txt","w") as json_file:
-    #    json.dump(results, json_file)
     return results
 
 
