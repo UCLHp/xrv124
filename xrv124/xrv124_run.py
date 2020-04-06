@@ -98,11 +98,11 @@ def main():
     if filesok:
         beams = get_ordered_beams(filenames)
         print("Analyzing spot shifts...")
-        results_shifts = xan.analyse_shifts(directory, beams)  ## FEED GANTRY AND ENERGY HERE
+        results_shifts = xan.analyse_shifts(directory, beams, GANTRY, ENERGY)  ## FEED GANTRY AND ENERGY HERE
         print("Analyzing spot diameters...")
-        results_spot_sizes = xan.analyse_spot_sizes(directory, beams)
+        results_spot_sizes = xan.analyse_spot_sizes(directory, beams, GANTRY, ENERGY)
         print("Analzying spot sigmas...")
-        results_sigmas = xan.analyse_spot_profiles(directory, beams)
+        results_sigmas = xan.analyse_spot_profiles(directory, beams, GANTRY, ENERGY)
     else:
         #Need to decide how to deal with this
         print("Incorrect number of files found - did you choose correct directory?")

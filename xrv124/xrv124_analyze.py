@@ -7,16 +7,16 @@ from skimage import data, util
 from skimage.measure import label, regionprops, profile_line
 import easygui
 import json
-# alternative to curve_fit
+# Robust alternative to curve_fit
 from lmfit import Model
 from lmfit import Parameters
 
 
 # Define GAs and energies used (As at Christie)
-GANTRY = list( range(180,-181,-30) )
-ENERGY = [245,240]+list( range(230,69,-10) )
-print("GANTRY analyze={}".format(GANTRY))
-print("ENERGY analyze={}".format(ENERGY)) 
+#GANTRY = list( range(180,-181,-30) )
+#ENERGY = [245,240]+list( range(230,69,-10) )
+#print("GANTRY analyze={}".format(GANTRY))
+#print("ENERGY analyze={}".format(ENERGY)) 
 
 # % threshold for finding centre of shadow in entry-exit image
 THRESHOLD = 50.0   
@@ -64,7 +64,7 @@ def get_equivalent_diameter( entryspot ):
 
 
 
-def analyse_shifts(directory, beams):
+def analyse_shifts(directory, beams, GANTRY, ENERGY):
     """Analyse full acquisition data set
 
     This means all beams were captured at all GAs and energies.
@@ -146,7 +146,7 @@ def analyse_shifts(directory, beams):
 
 
 
-def analyse_spot_sizes(directory, beams):
+def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
     """Analyse FULL acquisition data set for entry spot "diameter" in csv file
     FUNCTION WILL NOT WORK IS THERE IS MISSING DATA
     """
@@ -243,7 +243,7 @@ def sigma_angled_profile_lmfit(spot_img, img_angle, pitch):
 
 
 
-def analyse_spot_profiles(directory, beams):
+def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
     """
     Plots showing spot sizes at each gantry angle
     """
