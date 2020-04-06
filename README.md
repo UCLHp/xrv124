@@ -2,8 +2,8 @@
 
 A set of scripts for the analysis and visualization of data acquired by the Logos XRV-124 scintillating cone. Analysis currently includes, at all gantry angles and beam energies:
 
-..* Spot shifts
-..* Spot sizes (in both "image" and "spot" coordinate systems; see documentation)
+  * Spot shifts
+  * Spot sizes (in both "image" and "spot" coordinate systems; see documentation)
 
 
 ## Usage
