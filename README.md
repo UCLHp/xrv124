@@ -1,6 +1,6 @@
 # xrv124
 
-[![Current Version](https://img.shields.io/badge/version-0.1.0-green.svg)]
+![Current Version](https://img.shields.io/badge/version-0.1.0-green.svg)
 
 A set of scripts for the analysis and visualization of data acquired by the Logos XRV-124 scintillating cone. Analysis currently includes, for a selection of gantry angles and beam energies:
 
