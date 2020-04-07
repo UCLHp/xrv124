@@ -37,14 +37,14 @@ def trim_axs(axs, N):
 ############### SHIFTS #################
 
 
-def plot_shifts_by_gantry(results):
+def plot_shifts_by_gantry(results, imgname=None):
     """
     Plots showing shifts for each gantry angle
     """
     rows=4
     cols=4
 
-    fig,axs = plt.subplots(rows,cols, figsize=(12,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(GANTRY) )
 
     for ga,ax in zip(GANTRY,axs):
@@ -64,18 +64,22 @@ def plot_shifts_by_gantry(results):
     fig.suptitle("(x,y) shifts in mm at each GA", fontsize=16)
     plt.xlabel("x shift (mm)")
     plt.ylabel("y shift (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
-def plot_shifts_by_energy(results):
+
+def plot_shifts_by_energy(results, imgname=None):
     """
     Plots showing shifts for each energy
     """
     rows=4
     cols=5
 
-    fig,axs = plt.subplots(rows,cols, figsize=(15,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(ENERGY))
 
     for en,ax in zip(ENERGY,axs):
@@ -95,19 +99,22 @@ def plot_shifts_by_energy(results):
     fig.suptitle("(x,y) shifts in mm at each energy", fontsize=16)
     plt.xlabel("x shift (mm)")
     plt.ylabel("y shift (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
 
-def plot_xyshifts_vs_gantry(results):
+def plot_xyshifts_vs_gantry(results, imgname=None):
     """
     Plots showing x,y shifts separately vs GA for each energy
     """
     rows=4
     cols=5
 
-    fig,axs = plt.subplots(rows,cols, figsize=(15,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(ENERGY))
 
     for en,ax in zip(ENERGY,axs):
@@ -135,18 +142,21 @@ def plot_xyshifts_vs_gantry(results):
     fig.suptitle("Shifts (mm) vs GA for a given energy", fontsize=16)
     plt.xlabel("GA (degree)")
     plt.ylabel("Shift (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
-def plot_xyshifts_vs_energy(results):
+def plot_xyshifts_vs_energy(results, imgname=None):
     """
     Plots showing x,y shifts separately vs GA for each energy
     """
     rows=4
     cols=4
 
-    fig,axs = plt.subplots(rows,cols, figsize=(15,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(GANTRY))
 
     for ga,ax in zip(GANTRY,axs):
@@ -174,7 +184,10 @@ def plot_xyshifts_vs_energy(results):
     fig.suptitle("Shifts (mm) vs energy for a given GA", fontsize=16)
     plt.xlabel("Energy (MeV)")
     plt.ylabel("Shift (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
@@ -183,14 +196,14 @@ def plot_xyshifts_vs_energy(results):
 
 ################ SPOT SIZES ######################
 
-def plot_spot_sizes_by_gantry(results):
+def plot_spot_sizes_by_gantry(results, imgname=None):
     """
     Plots showing spot sizes at each gantry angle
     """
     rows=4
     cols=4
 
-    fig,axs = plt.subplots(rows,cols, figsize=(12,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(GANTRY) )
 
     for ga,ax in zip(GANTRY,axs):
@@ -209,17 +222,20 @@ def plot_spot_sizes_by_gantry(results):
     fig.suptitle("Spot diameter (mm) vs energy", fontsize=16)
     plt.xlabel("Energy")
     plt.ylabel("Diameter (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
-def plot_spot_sizes_by_energy(results):
+def plot_spot_sizes_by_energy(results, imgname=None):
     """
     Plots showing spot sizes at each gantry angle
     """
     rows=4
     cols=5
 
-    fig,axs = plt.subplots(rows,cols, figsize=(12,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(ENERGY) )
 
     for en,ax in zip(ENERGY,axs):
@@ -239,20 +255,23 @@ def plot_spot_sizes_by_energy(results):
     fig.suptitle("Spot diameter (mm) vs GA", fontsize=16)
     plt.xlabel("Gantry angle)")
     plt.ylabel("Diameter (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
 
 ############### SPOT SIGMAS X,Y #####################
 
-def plot_spot_sigmas(results):
+def plot_spot_sigmas(results, imgname=None):
     """Plot spot sigmas (x and y) for either SPOT or IMAGE xcoord systems
     """
     rows=4
     cols=5
 
-    fig,axs = plt.subplots(rows,cols, figsize=(12,15), constrained_layout=True)
+    fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
     axs = trim_axs(axs, len(ENERGY) )
 
     for en,ax in zip(ENERGY,axs):  
@@ -271,7 +290,10 @@ def plot_spot_sigmas(results):
     fig.suptitle("Spot sigmas (mm) vs GA", fontsize=16)
     plt.xlabel("Gantry angle)")
     plt.ylabel("Diameter (mm)")
-    plt.show()
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
 
 
 
@@ -290,10 +312,14 @@ def main():
     with open(resultsfile) as filein:
         results = json.load(filein)
 
-    '''# SHIFT PLOTS
+
+    # Note that the different plots require different
+    # formating of "results". Need to select correct file.
+
+    # SHIFT PLOTS
     # 2D plot of shifts (x,y) grouped by GA
-    plot_shifts_by_gantry(results)
-    # 2D plot of shifts (x,y) grouped by ENERGY
+    plot_shifts_by_gantry(results, "test.png")
+    '''# 2D plot of shifts (x,y) grouped by ENERGY
     plot_shifts_by_energy(results)
     # x & y shifts plotted separately vs GA (for each E)
     plot_xyshifts_vs_gantry(results)
@@ -305,7 +331,7 @@ def main():
     #plot_spot_sizes_by_gantry(results)
     #plot_spot_sizes_by_energy(results)
 
-    plot_spot_sigmas(results)
+    #plot_spot_sigmas(results)
 
 
 

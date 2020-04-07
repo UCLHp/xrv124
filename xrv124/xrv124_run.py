@@ -9,6 +9,7 @@ import easygui
 import json
 
 import xrv124_analyze as xan
+import xrv124_plot as xplot
 
 
 
@@ -89,7 +90,6 @@ def main():
     filenames = get_filenames(directory)
     filesok = check_files(filenames)
 
-
     results_shifts = {}
     results_spot_sizes = {}
     results_sigmas = {}
@@ -109,12 +109,32 @@ def main():
         exit(0)
 
 
-    with open("results_shits.txt","w") as json_file:
+    # Save results
+    with open("results_shifts.txt","w") as json_file:
         json.dump(results_shifts, json_file)
     with open("results_spot_sizes.txt","w") as json_file:
         json.dump(results_spot_sizes, json_file)
     with open("results_spot_sigmas.txt","w") as json_file:
         json.dump(results_sigmas, json_file)
+
+
+    # Print results
+
+    # 2D plot of shifts (x,y) grouped by GA
+    xplot.plot_shifts_by_gantry(results_shifts, imgname="shifts_by_gantry.png")
+    # 2D plot of shifts (x,y) grouped by ENERGY
+    xplot.plot_shifts_by_energy(results_shifts, imgname="shifts_by_energy.png")
+    # x & y shifts plotted separately vs GA (for each E)
+    xplot.plot_xyshifts_vs_gantry(results_shifts, imgname="xy_shifts_vs_gantry.png")
+    # x & y shifts plotted separately vs E (for each GA)
+    xplot.plot_xyshifts_vs_energy(results_shifts, imgname="xy_shifts_vs_energy.png")
+
+    ## Spot diameter plots
+    xplot.plot_spot_sizes_by_gantry(results_spot_sizes, imgname="diameter_by_gantry.png")
+    xplot.plot_spot_sizes_by_energy(results_spot_sizes, imgname="diameter_by_energy.png")
+
+    ## Spot sigma (method can do either "image" or "spot" coordinate systems
+    xplot.plot_spot_sigmas(results_sigmas, imgname="sigmas_xy.png")
 
 
 
