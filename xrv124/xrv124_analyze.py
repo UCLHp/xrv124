@@ -270,8 +270,8 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
             ## USE THESE FOR FIXED IMAGE COORD PROFILES
             #if coords.lower()=="image":
-                #x_sigma = sigma_angled_profile( entry, x, y, 0, pitch )
-                #y_sigma = sigma_angled_profile( entry, x, y, 90, pitch )
+                #x_sigma = sigma_angled_profile( entry, 0, pitch )
+                #y_sigma = sigma_angled_profile( entry, 90, pitch )
          
             if(x_sigma>8 or y_sigma>8):
                 print("x_sigma={}, y_sigma={}".format(x_sigma, y_sigma) )

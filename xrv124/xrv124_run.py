@@ -19,8 +19,8 @@ import xrv124_plot as xplot
 GANTRY = list( range(180,-181,-30) )
 ENERGY = [245,240]+list( range(230,69,-10) )
 
-print("GANTRY run={}".format(GANTRY))
-print("ENERGY run={}".format(ENERGY)) 
+print("GANTRY={}".format(GANTRY))
+print("ENERGY={}".format(ENERGY)) 
 
 
 
