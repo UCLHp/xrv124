@@ -282,4 +282,3 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
     return results
 
-
