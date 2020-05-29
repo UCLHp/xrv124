@@ -10,6 +10,7 @@ import json
 
 import xrv124_analyze as xan
 import xrv124_plot as xplot
+import xrv124_report as xreport
 
 
 
@@ -118,7 +119,9 @@ def main():
         json.dump(results_sigmas, json_file)
 
 
-    # Print results
+
+
+    ######## Print result plots
 
     # 2D plot of shifts (x,y) grouped by GA
     xplot.plot_shifts_by_gantry(results_shifts, imgname="shifts_by_gantry.png")
@@ -135,6 +138,17 @@ def main():
 
     ## Spot sigma (method can do either "image" or "spot" coordinate systems
     xplot.plot_spot_sigmas(results_sigmas, imgname="sigmas_xy.png")
+    
+
+
+
+    ######## Print result summary
+    xreport.summary_reportlab(results_shifts, 
+                images=["shifts_by_gantry.png","shifts_by_energy.png"],
+                output="Summary report.pdf"
+                )
+
+
 
 
 
