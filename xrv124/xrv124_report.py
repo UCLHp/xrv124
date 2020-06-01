@@ -214,19 +214,19 @@ def summary_reportlab( shifts, images=None, output=None ):
 
 
     if len(beams_gt_1mm)>0:
-        Story.append(Spacer(1, 50))
+        Story.append(Spacer(1, 40))
         Story.append(Paragraph( "List of beams with displacements > 1 mm:", styles["Justify"]))             
         for ga in beams_gt_1mm:
             p = "GA {}: {}".format(ga, beams_gt_1mm[ga])
             Story.append(Paragraph( p, styles["Indent"]))             
     if len(beams_gt_1pt5mm)>0:
-        Story.append(Spacer(1, 50))
+        Story.append(Spacer(1, 40))
         Story.append(Paragraph( "List of beams with displacements > 1.5 mm:", styles["Justify"]))             
         for ga in beams_gt_1pt5mm:
             p = "GA {}: {}".format(ga, beams_gt_1pt5mm[ga])
             Story.append(Paragraph( p, styles["Indent"]))        
     if len(beams_gt_2mm)>0:
-        Story.append(Spacer(1, 50))
+        Story.append(Spacer(1, 40))
         Story.append(Paragraph( "List of beams with displacements > 2 mm:", styles["Justify"]))             
         for ga in beams_gt_2mm:
             p = "GA {}: {}".format(ga, beams_gt_2mm[ga])

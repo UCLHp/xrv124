@@ -89,6 +89,8 @@ def get_centroid_of_region( img, threshold, ga=None, en=None ):
 def analyse_shifts(directory, beams, GANTRY, ENERGY):
     """Analyse spot shifts in x,y of image coordinates
 
+    Q: define shift from centre of image or centre of spot???
+
     This means all beams were captured at all GAs and energies.
     FUNCTION WILL NOT WORK IS THERE IS MISSING DATA
     """
@@ -97,6 +99,7 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
     cnt = -1
 
     spot_img_centre_shifts = []
+    centre_shifts = []
 
     for ga in GANTRY:
         for en in ENERGY:
@@ -128,18 +131,29 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             # OR should this be centre of the exitspot?
             exitspotcentre = get_centroid_of_region( exit, THRESHOLD, ga, en )
 
+            entryspotcentre = get_centroid_of_region( entry, THRESHOLD, ga, en )
+
+      
+            print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
+            centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
+            print("   diff = {}".format(centre_diff) )
+            centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
+      
 
             #print("ExitSpotCdentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
-            spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
-            print("   diff = {}".format(spot_img_diff) )
-            spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
+            #spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
+            #print("   diff = {}".format(spot_img_diff) )
+            #spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
 
-            
+
+            #####   TODO: DECIDE WHAT TO USE (OR ENTRY SPOT / AVG OF ENTRY AND EXIT?)
+            ############################################################################
             # Shift reported as centrOfImage - centreOfBBShadow
             ####shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
             #
             # Shift as centreOfExitSpot - centreOfBBShadow            
             shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
+            ########################################################################### 
 
             # i.e. record shift  as tuple (x,y)
             # json does not allow numpy types; need lists and ints
@@ -159,8 +173,11 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             #plt.show()'''
 
 
-    print("Mean shift (mm) from centre of spot from centre of image = {}".format( pitch*sum(spot_img_centre_shifts)/len(spot_img_centre_shifts) ) )
-    print("Max shift = {}".format( max(spot_img_centre_shifts)*pitch ) )
+    #print("Mean shift (mm) from centre of spot from centre of image = {}".format( pitch*sum(spot_img_centre_shifts)/len(spot_img_centre_shifts) ) )
+    #print("Max shift = {}".format( max(spot_img_centre_shifts)*pitch ) )
+
+    print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
+    print("Max shift = {}".format( max(centre_shifts)*pitch ) )
 
             
     return results
