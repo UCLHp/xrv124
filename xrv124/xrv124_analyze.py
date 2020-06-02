@@ -14,8 +14,11 @@ from lmfit import Parameters
 
 
 
-# % threshold for finding centre of shadow in entry-exit image
+# % threshold for finding centre of BB shadow in entry-exit image
 THRESHOLD = 50.0   
+
+# % threshold for finding centroid of spots
+THRESH_CENTROID = 50.0
 
 
 
@@ -80,7 +83,11 @@ def get_centroid_of_region( img, threshold, ga=None, en=None ):
 
     # Centroid of first labeled object
     # Centroid coordinate tuple is (row, col) - i.e. (y,x) so need to flip it
-    centroid = [ int(round(props[0].centroid[1],0)), int(round(props[0].centroid[0],0)) ] ## Now (x,y)
+    # Rounded to nearest pixel 
+    ##centroid = [ int(round(props[0].centroid[1],0)), int(round(props[0].centroid[0],0)) ] ## Now (x,y)
+    # Leave coord as float 
+    centroid = [ props[0].centroid[1], props[0].centroid[0] ] ## Now (x,y)
+
     return centroid
 
 
@@ -126,33 +133,46 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             # centroid of shadow
             shadowcentre = get_centroid_of_region( sub, THRESHOLD, ga, en )
 
-            # Get centre of image / spot (!?)
+            ####### TODO, decide
+            # Get centre of image coords
             imagecentre = [ ncols//2, nrows//2 ]  ## (x,y)
             # OR should this be centre of the exitspot?
-            exitspotcentre = get_centroid_of_region( exit, THRESHOLD, ga, en )
+            exitspotcentre = get_centroid_of_region( exit, THRESH_CENTROID , ga, en )
+            # Centre of entry? (To avoid issues with BB shadow)
+            entryspotcentre = get_centroid_of_region( entry, THRESH_CENTROID , ga, en )
+            # Average both the exit and entry spot centres?
+            avgcentre = [ 0.5*(exitspotcentre[0]+entryspotcentre[0]),
+                          0.5*(exitspotcentre[1]+entryspotcentre[1])  ]
 
-            entryspotcentre = get_centroid_of_region( entry, THRESHOLD, ga, en )
 
+            #print("{},{}".format(beams[cnt],k))
+            #print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
+            #centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
+            #print("   diff = {}".format(centre_diff) )
+            #centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
       
-            print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
-            centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
-            print("   diff = {}".format(centre_diff) )
-            centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
-      
-
-            #print("ExitSpotCdentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
+            #print("ExitSpotCentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
             #spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
             #print("   diff = {}".format(spot_img_diff) )
             #spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
 
 
-            #####   TODO: DECIDE WHAT TO USE (OR ENTRY SPOT / AVG OF ENTRY AND EXIT?)
+            #####   TODO: DECIDE WHAT TO USE 
+            # Benefit to image centre is it's not dependent on quality of spot image
+            # Or if Logos gets this slightly misplaced then it's better to use spots, but best
+            #     to use an avg of entry and exit in case BB shadow in exit spot affects centroid
+            # Need to be sure regionprops works well
             ############################################################################
             # Shift reported as centrOfImage - centreOfBBShadow
             ####shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
             #
             # Shift as centreOfExitSpot - centreOfBBShadow            
-            shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
+            ###shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
+
+            # I think we should use some info from the spots rather than just the image
+            # coordinate centre. DECISION: avg entry and exit spot centres and use a 
+            # threshold value (to determine centroid) of 50%
+            shift_pixels = np.array(avgcentre) - np.array(shadowcentre)
             ########################################################################### 
 
             # i.e. record shift  as tuple (x,y)
@@ -176,8 +196,8 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
     #print("Mean shift (mm) from centre of spot from centre of image = {}".format( pitch*sum(spot_img_centre_shifts)/len(spot_img_centre_shifts) ) )
     #print("Max shift = {}".format( max(spot_img_centre_shifts)*pitch ) )
 
-    print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
-    print("Max shift = {}".format( max(centre_shifts)*pitch ) )
+    #print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
+    #print("Max shift = {}".format( max(centre_shifts)*pitch ) )
 
             
     return results
