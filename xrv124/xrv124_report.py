@@ -85,7 +85,7 @@ def get_table_data(displacements):
 
         # Check tolerances per GA
         if len(gt_2p5)>0:
-            print("WARNING: Suspension limit exceeded; beam {}\n".format(k))
+            print("WARNING: Suspension limit exceeded; beams {}\n".format( list(gt_2p5.keys()) ))
             #print(gt_2p5)
         if len(gt_2)>0:
             #print("WARNING: 2mm Action limit exceeded for GA={}\n".format(ga))

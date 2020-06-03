@@ -65,28 +65,47 @@ def get_equivalent_diameter( entryspot ):
 
 
 
-def get_centroid_of_region( img, threshold, ga=None, en=None ):
-    """Return centroid of single region
+def get_centroid_of_largest_region( img, threshold, ga=None, en=None ):
+    """Return centroid of spot based on threshold image
+
+    Depending on choice of threshold there may be more than 1 region identified
+    Method always chooses the largest based on diameter as this will be the main spot
     """
     # float images must be between -1 and 1
     norm_img = img / img.max() 
 
-    # simple threshold of 50%. IS THIS APPROPRIATE? 80% BETTER?
+    # simple threshold of 50%.
     thresh = norm_img>(threshold/100.0)
 
     # Use skimage to get region properties
     label_img = label(thresh, connectivity=thresh.ndim)
     props = regionprops(label_img)
-    if len(props)!=1:
-        print("ERROR: regionprops() did not return a single region\
-                    for GA={}, E={}".format(ga,en) )
+    # Our region of interest
+    largest_region = None
+
+    if len(props)==0:
+        print("ERROR: regionprops() found no region!")
+    else:
+        if len(props)>1:
+            print("Warning: regionprops() found multiple regions\
+                      for GA={}, E={} at threshold={}. Choosing\
+                         largest.".format(ga,en, threshold) )
+        largest_diam = -999
+        largest_index = -1        
+        for i,p in enumerate(props):
+            if p.equivalent_diameter>largest_diam:
+                largest_diam = p.equivalent_diameter
+                largest_index = i
+
+        largest_region = props[largest_index]
 
     # Centroid of first labeled object
     # Centroid coordinate tuple is (row, col) - i.e. (y,x) so need to flip it
     # Rounded to nearest pixel 
-    ##centroid = [ int(round(props[0].centroid[1],0)), int(round(props[0].centroid[0],0)) ] ## Now (x,y)
+    ##centroid = [ int(round(largest_region.centroid[1],0)), int(round(largest_region.centroid[0],0)) ] ## Now (x,y)
     # Leave coord as float 
-    centroid = [ props[0].centroid[1], props[0].centroid[0] ] ## Now (x,y)
+    ##centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
+    centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
 
     return centroid
 
@@ -131,30 +150,31 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             sub = entry - exit
 
             # centroid of shadow
-            shadowcentre = get_centroid_of_region( sub, THRESHOLD, ga, en )
+            shadowcentre = get_centroid_of_largest_region( sub, THRESHOLD, ga, en )
 
             ####### TODO, decide
             # Get centre of image coords
             imagecentre = [ ncols//2, nrows//2 ]  ## (x,y)
             # OR should this be centre of the exitspot?
-            exitspotcentre = get_centroid_of_region( exit, THRESH_CENTROID , ga, en )
+            exitspotcentre = get_centroid_of_largest_region( exit, THRESH_CENTROID , ga, en )
             # Centre of entry? (To avoid issues with BB shadow)
-            entryspotcentre = get_centroid_of_region( entry, THRESH_CENTROID , ga, en )
+            entryspotcentre = get_centroid_of_largest_region( entry, THRESH_CENTROID , ga, en )
             # Average both the exit and entry spot centres?
             avgcentre = [ 0.5*(exitspotcentre[0]+entryspotcentre[0]),
                           0.5*(exitspotcentre[1]+entryspotcentre[1])  ]
 
 
-            #print("{},{}".format(beams[cnt],k))
-            #print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
-            #centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
-            #print("   diff = {}".format(centre_diff) )
-            #centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
+            #### experimenting #####
+            ##print("####### {},{}".format(beams[cnt],k))
+            ##print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
+            centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
+            ##print("   diff = {}".format(centre_diff) )
+            centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
       
-            #print("ExitSpotCentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
-            #spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
-            #print("   diff = {}".format(spot_img_diff) )
-            #spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
+            ##print("ExitSpotCentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
+            spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
+            ##print("   diff = {}".format(spot_img_diff) )
+            spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
 
 
             #####   TODO: DECIDE WHAT TO USE 
@@ -198,7 +218,6 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
 
     #print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
     #print("Max shift = {}".format( max(centre_shifts)*pitch ) )
-
             
     return results
         
