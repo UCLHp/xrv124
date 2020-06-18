@@ -14,8 +14,11 @@ from lmfit import Parameters
 
 
 
-# % threshold for finding centre of shadow in entry-exit image
+# % threshold for finding centre of BB shadow in entry-exit image
 THRESHOLD = 50.0   
+
+# % threshold for finding centroid of spots
+THRESH_CENTROID = 50.0
 
 
 
@@ -62,9 +65,57 @@ def get_equivalent_diameter( entryspot ):
 
 
 
+def get_centroid_of_largest_region( img, threshold, ga=None, en=None ):
+    """Return centroid of spot based on threshold image
+
+    Depending on choice of threshold there may be more than 1 region identified
+    Method always chooses the largest based on diameter as this will be the main spot
+    """
+    # float images must be between -1 and 1
+    norm_img = img / img.max() 
+
+    # simple threshold of 50%.
+    thresh = norm_img>(threshold/100.0)
+
+    # Use skimage to get region properties
+    label_img = label(thresh, connectivity=thresh.ndim)
+    props = regionprops(label_img)
+    # Our region of interest
+    largest_region = None
+
+    if len(props)==0:
+        print("ERROR: regionprops() found no region!")
+    else:
+        if len(props)>1:
+            print("Warning: regionprops() found multiple regions\
+                      for GA={}, E={} at threshold={}. Choosing\
+                         largest.".format(ga,en, threshold) )
+        largest_diam = -999
+        largest_index = -1        
+        for i,p in enumerate(props):
+            if p.equivalent_diameter>largest_diam:
+                largest_diam = p.equivalent_diameter
+                largest_index = i
+
+        largest_region = props[largest_index]
+
+    # Centroid of first labeled object
+    # Centroid coordinate tuple is (row, col) - i.e. (y,x) so need to flip it
+    # Rounded to nearest pixel 
+    ##centroid = [ int(round(largest_region.centroid[1],0)), int(round(largest_region.centroid[0],0)) ] ## Now (x,y)
+    # Leave coord as float 
+    ##centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
+    centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
+
+    return centroid
+
+
+
 
 def analyse_shifts(directory, beams, GANTRY, ENERGY):
     """Analyse spot shifts in x,y of image coordinates
+
+    Q: define shift from centre of image or centre of spot???
 
     This means all beams were captured at all GAs and energies.
     FUNCTION WILL NOT WORK IS THERE IS MISSING DATA
@@ -72,6 +123,10 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
     results = {}
 
     cnt = -1
+
+    spot_img_centre_shifts = []
+    centre_shifts = []
+
     for ga in GANTRY:
         for en in ENERGY:
             cnt+=1
@@ -87,41 +142,59 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
                 #TODO: deal with unequal entry/exit spot sizes
             pitch = pitch_en
 
+            ## np array [y][x]
             nrows = entry.shape[0]
             ncols = entry.shape[1]
 
-            '''plt.imshow( entry )
-            plt.title( "Entry spot" )
-            plt.show()
-            plt.imshow( exit  )
-            plt.title( "Exit spot" )
-            plt.show()'''
-
-            # subtract exit spot from entry spot
+            # subtract exit spot from entry spot for shadow
             sub = entry - exit
-            # float images must be between -1 and 1
-            sub = sub / sub.max() 
-            ####################################
-            ##sub = np.transpose(sub)
-            #####################################
-            # simple threshold of 50%. IS THIS APPROPRIATE? 80% BETTER?
-            img = sub>(THRESHOLD/100.0)
 
-            # Use skimage to get region properties
-            label_img = label(img, connectivity=img.ndim)
-            props = regionprops(label_img)
-            if len(props)!=1:
-                print("ERROR: regionprops() did not return a single region\
-                            for GA={}, E={}".format(ga,en) )
+            # centroid of shadow
+            shadowcentre = get_centroid_of_largest_region( sub, THRESHOLD, ga, en )
 
-            ## np array [y][x]
+            ####### TODO, decide
+            # Get centre of image coords
             imagecentre = [ ncols//2, nrows//2 ]  ## (x,y)
-            # centroid of first labeled object
-            # Centroid coordinate tuple is (row, col) - i.e. (y,x) so need to flip it
-            shadowcentre = [ int(round(props[0].centroid[1],0)), int(round(props[0].centroid[0],0)) ] ## Now (x,y)
-            
+            # OR should this be centre of the exitspot?
+            exitspotcentre = get_centroid_of_largest_region( exit, THRESH_CENTROID , ga, en )
+            # Centre of entry? (To avoid issues with BB shadow)
+            entryspotcentre = get_centroid_of_largest_region( entry, THRESH_CENTROID , ga, en )
+            # Average both the exit and entry spot centres?
+            avgcentre = [ 0.5*(exitspotcentre[0]+entryspotcentre[0]),
+                          0.5*(exitspotcentre[1]+entryspotcentre[1])  ]
+
+
+            #### experimenting #####
+            ##print("####### {},{}".format(beams[cnt],k))
+            ##print("Entry centre = {}, Exit Centre = {}".format(entryspotcentre, exitspotcentre)  )
+            centre_diff = [ entryspotcentre[0]-exitspotcentre[0], entryspotcentre[1]-exitspotcentre[1]  ]
+            ##print("   diff = {}".format(centre_diff) )
+            centre_shifts.append(  (centre_diff[0]**2+centre_diff[1]**2)**0.5   )
+      
+            ##print("ExitSpotCentre = {}, ImageCentre = {}".format(exitspotcentre, imagecentre)  )
+            spot_img_diff = [ exitspotcentre[0]-imagecentre[0], exitspotcentre[1]-imagecentre[1]  ]
+            ##print("   diff = {}".format(spot_img_diff) )
+            spot_img_centre_shifts.append(  (spot_img_diff[0]**2+spot_img_diff[1]**2)**0.5   )
+
+
+            #####   TODO: DECIDE WHAT TO USE 
+            # Benefit to image centre is it's not dependent on quality of spot image
+            # Or if Logos gets this slightly misplaced then it's better to use spots, but best
+            #     to use an avg of entry and exit in case BB shadow in exit spot affects centroid
+            # Need to be sure regionprops works well
+            ############################################################################
             # Shift reported as centrOfImage - centreOfBBShadow
-            shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
+            ####shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
+            #
+            # Shift as centreOfExitSpot - centreOfBBShadow            
+            ###shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
+
+            # I think we should use some info from the spots rather than just the image
+            # coordinate centre. DECISION: avg entry and exit spot centres and use a 
+            # threshold value (to determine centroid) of 50%
+            shift_pixels = np.array(avgcentre) - np.array(shadowcentre)
+            ########################################################################### 
+
             # i.e. record shift  as tuple (x,y)
             # json does not allow numpy types; need lists and ints
             shift2 = list(shift_pixels)
@@ -139,6 +212,12 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             #plt.title("Entry-exit spots.\nImage centre and ball-bearing shadow centre shown")
             #plt.show()'''
 
+
+    #print("Mean shift (mm) from centre of spot from centre of image = {}".format( pitch*sum(spot_img_centre_shifts)/len(spot_img_centre_shifts) ) )
+    #print("Max shift = {}".format( max(spot_img_centre_shifts)*pitch ) )
+
+    #print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
+    #print("Max shift = {}".format( max(centre_shifts)*pitch ) )
             
     return results
         
@@ -262,7 +341,8 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
             cnt+=1
 
             k="GA"+str(ga)+"E"+str(en) 
-            print("{},{}".format(beams[cnt],k))
+            # Print which file corresponds to which beam
+            #print("{},{}".format(beams[cnt],k))
 
             entry, pitch = get_image_data( join(directory,beams[cnt])+".csv" ) 
 
