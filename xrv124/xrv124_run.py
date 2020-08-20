@@ -20,8 +20,10 @@ import xrv124_report as xreport
 GANTRY = list( range(180,-181,-30) )
 ENERGY = [245,240]+list( range(230,69,-10) )
 
+print("\n")
 print("GANTRY={}".format(GANTRY))
 print("ENERGY={}".format(ENERGY)) 
+
 
 
 
@@ -122,6 +124,7 @@ def main():
 
 
     ######## Print result plots
+    print("Printing results...")
 
     # 2D plot of shifts (x,y) grouped by GA
     xplot.plot_shifts_by_gantry(results_shifts, imgname="shifts_by_gantry.png")

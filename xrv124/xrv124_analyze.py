@@ -1,3 +1,4 @@
+import sys
 from os import listdir
 from os.path import isfile, join, splitext
 from math import sin, cos, radians
@@ -14,11 +15,26 @@ from lmfit import Parameters
 
 
 
+
 # % threshold for finding centre of BB shadow in entry-exit image
 THRESHOLD = 50.0   
 
 # % threshold for finding centroid of spots
 THRESH_CENTROID = 50.0
+
+
+
+
+def progress_bar(value, endvalue, bar_length=50):
+    """Displays percentage of beams processed"""
+
+    percent = float(value) / endvalue
+    arrow = '-' * int(round(percent * bar_length))
+    spaces = ' ' * (bar_length - len(arrow))
+
+    sys.stdout.write("\r[{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+    sys.stdout.flush()
+
 
 
 
@@ -126,10 +142,12 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
 
     spot_img_centre_shifts = []
     centre_shifts = []
-
+    
     for ga in GANTRY:
         for en in ENERGY:
             cnt+=1
+            
+            progress_bar(cnt, len(beams) )
 
             # key for storing result
             k = "GA"+str(ga)+"E"+str(en)
@@ -219,6 +237,10 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
     #print("Mean shift (mm) from centre of entry and exit spot = {}".format( pitch*sum(centre_shifts)/len(centre_shifts) ) )
     #print("Max shift = {}".format( max(centre_shifts)*pitch ) )
             
+    # New line after porgress bar
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+            
     return results
         
 
@@ -233,6 +255,9 @@ def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
     for ga in GANTRY:
         for en in ENERGY:
             cnt+=1
+            
+            progress_bar(cnt, len(beams) )
+            
             # key for storing result
             k = "GA"+str(ga)+"E"+str(en)
             with open( join(directory,beams[cnt])+".csv" ) as f:
@@ -240,6 +265,10 @@ def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
                 line = f.readline()
                 diameter = float( line.split("Diameter:,")[1].split(",")[0].strip() )
                 results[k] = diameter
+
+    # New line after porgress bar
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 
     return results
 
@@ -339,6 +368,8 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
     for ga in GANTRY:
         for en in ENERGY:    
             cnt+=1
+            
+            progress_bar(cnt, len(beams) )
 
             k="GA"+str(ga)+"E"+str(en) 
             # Print which file corresponds to which beam
@@ -363,6 +394,10 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
                 print("x_sigma={}, y_sigma={}".format(x_sigma, y_sigma) )        
 
             results[k] = (x_sigma, y_sigma)
+            
+    # New line after porgress bar
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 
     return results
 
