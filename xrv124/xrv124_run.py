@@ -37,7 +37,7 @@ def choose_directory():
     if easygui.ccbox(msg, title):
         pass
     else:
-        sys.exit(0)
+        exit(0)
     return easygui.diropenbox()
 
 
@@ -94,7 +94,7 @@ def main():
     filesok = check_files(filenames)
 
     results_shifts = {}
-    results_spot_sizes = {}
+    results_spot_diameters = {}
     results_sigmas = {}
     ##equiv_diams = {}
 
@@ -102,10 +102,12 @@ def main():
         beams = get_ordered_beams(filenames)
         print("Analyzing spot shifts...")
         results_shifts = xan.analyse_shifts(directory, beams, GANTRY, ENERGY)  ## FEED GANTRY AND ENERGY HERE
-        print("Analyzing spot diameters...")
-        results_spot_sizes = xan.analyse_spot_sizes(directory, beams, GANTRY, ENERGY)
+        print("Reading spot diameters...")
+        results_spot_diameters = xan.read_spot_diameters(directory, beams, GANTRY, ENERGY)
         print("Analzying spot sigmas...")
         results_sigmas = xan.analyse_spot_profiles(directory, beams, GANTRY, ENERGY)
+        print("Reading arc and radial entry spot widths...")
+        results_arc_radial = xan.read_arc_radial_widths(directory, beams, GANTRY, ENERGY)
     else:
         #Need to decide how to deal with this
         print("Incorrect number of files found - did you choose correct directory?")
@@ -115,10 +117,12 @@ def main():
     # Save results
     with open("results_shifts.txt","w") as json_file:
         json.dump(results_shifts, json_file)
-    with open("results_spot_sizes.txt","w") as json_file:
-        json.dump(results_spot_sizes, json_file)
+    with open("results_spot_diameters.txt","w") as json_file:
+        json.dump(results_spot_diameters, json_file)
     with open("results_spot_sigmas.txt","w") as json_file:
         json.dump(results_sigmas, json_file)
+    with open("results_arc_radial.txt","w") as json_file:
+        json.dump(results_arc_radial, json_file)
 
 
 
@@ -126,6 +130,7 @@ def main():
     ######## Print result plots
     print("Printing results...")
 
+    
     # 2D plot of shifts (x,y) grouped by GA
     xplot.plot_shifts_by_gantry(results_shifts, imgname="shifts_by_gantry.png")
     # 2D plot of shifts (x,y) grouped by ENERGY
@@ -136,16 +141,21 @@ def main():
     xplot.plot_xyshifts_vs_energy(results_shifts, imgname="xy_shifts_vs_energy.png")
 
     ## Spot diameter plots
-    xplot.plot_spot_sizes_by_gantry(results_spot_sizes, imgname="diameter_by_gantry.png")
-    xplot.plot_spot_sizes_by_energy(results_spot_sizes, imgname="diameter_by_energy.png")
+    xplot.plot_spot_diameters_by_gantry(results_spot_diameters, imgname="diameter_by_gantry.png")
+    xplot.plot_spot_diameters_by_energy(results_spot_diameters, imgname="diameter_by_energy.png")
+    
 
     ## Spot sigma (method can do either "image" or "spot" coordinate systems
     xplot.plot_spot_sigmas(results_sigmas, imgname="sigmas_xy.png")
     
+    ## Arc and radial widths from entry spot
+    xplot.plot_spot_sigmas(results_arc_radial, imgname="arc_radial.png",
+                               arc_radial=True)
+    
 
 
 
-    ######## Print result summary
+    ######## Print result summary PDF
     xreport.summary_reportlab(results_shifts, 
                 images=["shifts_by_gantry.png","shifts_by_energy.png"],
                 output="Summary report.pdf"

@@ -37,7 +37,6 @@ def progress_bar(value, endvalue, bar_length=50):
 
 
 
-
 def get_image_data(filename):
     """Return image numpy array of image plus pitch
     """
@@ -246,10 +245,13 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
 
 
 
-def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
-    """Retrieve ntry spot "diameter" from csv file
+def read_spot_diameters(directory, beams, GANTRY, ENERGY):
+    """Retrieve entry spot "diameter" from csv file
     FUNCTION WILL NOT WORK IF THERE IS MISSING DATA
     """
+    
+    #TODO: Should I take the average of the entry and exit spot diameters?
+    
     results = {}
     cnt = -1
     for ga in GANTRY:
@@ -265,6 +267,40 @@ def analyse_spot_sizes(directory, beams, GANTRY, ENERGY):
                 line = f.readline()
                 diameter = float( line.split("Diameter:,")[1].split(",")[0].strip() )
                 results[k] = diameter
+
+    # New line after porgress bar
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+
+    return results
+
+
+
+
+def read_arc_radial_widths(directory, beams, GANTRY, ENERGY):
+    """Retrieve entry spot "arc" (BEV-X) and "radial" (BEV-Y) widths 
+    from entry spot csv file
+    """
+        
+    results = {}
+    cnt = -1
+    for ga in GANTRY:
+        for en in ENERGY:
+            cnt+=1
+            
+            progress_bar(cnt, len(beams) )
+            
+            # key for storing result
+            k = "GA"+str(ga)+"E"+str(en)
+            with open( join(directory,beams[cnt])+".csv" ) as f:
+                arc, radial = None, None
+                for line in f.readlines():
+                    if "Arc Style" in line:
+                        arc = float( line.split("Entry (mm):,")[1].split(",")[0].strip() )
+                    if "Radial Style" in line:
+                        radial = float( line.split("Entry (mm):,")[1].split(",")[0].strip() )             
+
+            results[k] = (arc,radial)
 
     # New line after porgress bar
     sys.stdout.write("\n")
@@ -377,13 +413,12 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
             entry, pitch = get_image_data( join(directory,beams[cnt])+".csv" ) 
 
-
-            # Angle profile = 0 at GA=0 SPOT and BEV and IMAGE axes all match
-            # hence implies x-profile in IMAGE COORDS but y profile in SPOT COORDS (AT GA=0)
+            ## Angle profile=0 at GA=0 SPOT and BEV and IMAGE axes all match
+            ## hence implies x-profile in IMAGE COORDS but y profile in SPOT COORDS (AT GA=0)
             ##x_sigma = sigma_angled_profile( entry, -ga, pitch )
             ##y_sigma = sigma_angled_profile( entry, 90-ga,  pitch )
 
-            ## USE THESE FOR FIXED IMAGE COORD PROFILES
+            ## USE THESE FOR FIXED IMAGE COORD PROFILES (BEV coords)
             x_sigma = sigma_angled_profile( entry, 0, pitch )
             y_sigma = sigma_angled_profile( entry, 90, pitch )
          
