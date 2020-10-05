@@ -4,6 +4,7 @@ from matplotlib import cm
 import numpy as np
 import easygui
 
+
 ###############################################
 GANTRY = list( range(180,-181,-30) )
 ENERGY = [245,240]+list( range(230,69,-10) )
@@ -19,7 +20,7 @@ def select_file():
     if easygui.ccbox(msg, title):
         pass
     else:
-        sys.exit(0)
+        exit(0)
     return easygui.fileopenbox()
 
 
@@ -196,9 +197,9 @@ def plot_xyshifts_vs_energy(results, imgname=None):
 
 ################ SPOT SIZES ######################
 
-def plot_spot_sizes_by_gantry(results, imgname=None):
+def plot_spot_diameters_by_gantry(results, imgname=None):
     """
-    Plots showing spot sizes at each gantry angle
+    Plots showing spot size vs energy at each gantry angle
     """
     rows=4
     cols=4
@@ -213,7 +214,7 @@ def plot_spot_sizes_by_gantry(results, imgname=None):
         for en,c in zip(ENERGY,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(en, results[k], color=c, label=str(en) )
-        ax.set_ylim(7,15) #use this to better see the oscilatory nature
+        ax.set_ylim(7,15) # tune this to better see the oscilatory nature
         ax.set_title("GA = {}".format(str(ga)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -228,9 +229,9 @@ def plot_spot_sizes_by_gantry(results, imgname=None):
         plt.show()
 
 
-def plot_spot_sizes_by_energy(results, imgname=None):
+def plot_spot_diameters_by_energy(results, imgname=None):
     """
-    Plots showing spot sizes at each gantry angle
+    Plots showing spot diameters vs GA at each beam energy
     """
     rows=4
     cols=5
@@ -265,7 +266,7 @@ def plot_spot_sizes_by_energy(results, imgname=None):
 
 ############### SPOT SIGMAS X,Y #####################
 
-def plot_spot_sigmas(results, imgname=None):
+def plot_spot_sigmas(results, imgname=None, arc_radial=False):
     """Plot spot sigmas (x and y) for either SPOT or IMAGE xcoord systems
     """
     rows=4
@@ -282,6 +283,8 @@ def plot_spot_sigmas(results, imgname=None):
 
         ax.set_xlim(-200,200)
         ax.set_ylim(2,8) #use this to better see the oscilatory nature
+        if arc_radial:
+            ax.set_ylim(6.8,15.8) ## diff lims if plotting arc & radial widths
         ax.set_title("E = {} MeV".format(str(en)))
 
     handles, labels = plt.gca().get_legend_handles_labels()

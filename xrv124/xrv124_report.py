@@ -85,7 +85,7 @@ def get_table_data(displacements):
 
         # Check tolerances per GA
         if len(gt_2p5)>0:
-            print("WARNING: Suspension limit exceeded; beam {}\n".format(k))
+            print("WARNING: Suspension limit exceeded; beams {}\n".format( list(gt_2p5.keys()) ))
             #print(gt_2p5)
         if len(gt_2)>0:
             #print("WARNING: 2mm Action limit exceeded for GA={}\n".format(ga))
@@ -187,26 +187,51 @@ def summary_reportlab( shifts, images=None, output=None ):
     Story.append(t)
 
 
-    ########## LIST all beams with displacements > 1mm
-    Story.append(Spacer(1, 50))
-    Story.append(Paragraph( "List of beams with displacements > 1mm:", styles["Justify"]))             
-    Story.append(Spacer(1, 20))
-
+    ########## LIST all beams with displacements > 1, 1.5 and 2mm
     beams_gt_1mm = {}
+    beams_gt_1pt5mm = {}
+    beams_gt_2mm = {}
+
     for key in displacements:
-        if displacements[key] > 1.0:
-            ga = str(key.split("GA")[1].split("E")[0])
-            en = key.split("E")[1]+" MeV"
+        ga = str(key.split("GA")[1].split("E")[0])
+        en = key.split("E")[1]+" MeV"
+        if displacements[key] > 2.0:
             # Add new element of to existing list
+            if ga in beams_gt_2mm:
+                beams_gt_2mm[ga] = beams_gt_2mm[ga] + [en]
+            else:
+                beams_gt_2mm[ga] = [en]
+        elif displacements[key] > 1.5:
+            if ga in beams_gt_1pt5mm:
+                beams_gt_1pt5mm[ga] = beams_gt_1pt5mm[ga] + [en]
+            else:
+                beams_gt_1pt5mm[ga] = [en]
+        if displacements[key] > 1:
             if ga in beams_gt_1mm:
                 beams_gt_1mm[ga] = beams_gt_1mm[ga] + [en]
             else:
                 beams_gt_1mm[ga] = [en]
 
-    for ga in beams_gt_1mm:
-        p = "GA {}: {}".format(ga, beams_gt_1mm[ga])
-        Story.append(Paragraph( p, styles["Indent"]))             
 
+    if len(beams_gt_1mm)>0:
+        Story.append(Spacer(1, 40))
+        Story.append(Paragraph( "List of beams with displacements > 1 mm:", styles["Justify"]))             
+        for ga in beams_gt_1mm:
+            p = "GA {}: {}".format(ga, beams_gt_1mm[ga])
+            Story.append(Paragraph( p, styles["Indent"]))             
+    if len(beams_gt_1pt5mm)>0:
+        Story.append(Spacer(1, 40))
+        Story.append(Paragraph( "List of beams with displacements > 1.5 mm:", styles["Justify"]))             
+        for ga in beams_gt_1pt5mm:
+            p = "GA {}: {}".format(ga, beams_gt_1pt5mm[ga])
+            Story.append(Paragraph( p, styles["Indent"]))        
+    if len(beams_gt_2mm)>0:
+        Story.append(Spacer(1, 40))
+        Story.append(Paragraph( "List of beams with displacements > 2 mm:", styles["Justify"]))             
+        for ga in beams_gt_2mm:
+            p = "GA {}: {}".format(ga, beams_gt_2mm[ga])
+            Story.append(Paragraph( p, styles["Indent"]))
+    Story.append(Spacer(1, 20))
 
 
 
