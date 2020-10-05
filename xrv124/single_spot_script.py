@@ -2,6 +2,7 @@ from os.path import isfile, join, splitext
 import numpy as np
 from skimage.measure import label, regionprops, profile_line
 import matplotlib.pyplot as plt
+import easygui
 
 ################################################################
 #
@@ -41,7 +42,51 @@ def get_image_data(filename):
 
 
 
-def analyse_shifts(beamname):
+def print_spot_diameter(spotfile, spot="Entry"):
+    """Retrieve entry spot "diameter" from csv file
+    """  
+    filetype=""  
+    if spot=="Entry":
+        filetype=".csv"
+    elif spot=="Exit":
+        filetype=".txt"
+
+    #TODO: Should I take the average of the entry and exit spot diameters?
+    with open( spotfile+filetype ) as f:
+        #First line contains diameter
+        line = f.readline()
+        diameter = float( line.split("Diameter:,")[1].split(",")[0].strip() )
+    #return diameter
+    print("    Effective diameter = {}mm".format(diameter))
+
+
+
+
+def print_arc_radial_widths(spotfile, spot="Entry"):
+    """Retrieve entry spot "arc" (BEV-X) and "radial" (BEV-Y) widths 
+    from entry spot csv file
+    """
+    filetype=""
+    if spot=="Entry":
+        filetype=".csv"
+    elif spot=="Exit":
+        filetype=".txt"
+
+    arc, radial = None, None
+    with open( spotfile+filetype ) as f:
+        for line in f.readlines():
+            if "Arc Style" in line:
+                arc = float( line.split(spot+" (mm):,")[1].split(",")[0].strip() )
+            if "Radial Style" in line:
+                radial = float( line.split(spot+" (mm):,")[1].split(",")[0].strip() )             
+    #return (arc,radial)
+    print("    Arc width (BEV-X) = {}mm".format(arc) )
+    print("    Radial width (BEV-Y) = {}mm".format(radial) )
+
+
+
+
+def print_shifts(beamname):
     """Print x,y shifts in BEV coords of exit spot from BB shadown
     """
 
@@ -85,8 +130,7 @@ def analyse_shifts(beamname):
     shift2 = list(shift_pixels)
     shift_mm = [ s*pitch for s in shift2 ]        
 
-    print( "Shifts in BEV coordinates: ")
-    print( f"x={shift_mm[0]}, y={-shift_mm[1]}" )
+    print( f"    x={shift_mm[0]}, y={-shift_mm[1]}" )
 
     #Plot centre of image and centroid of ball-bearing shadow
     exit[imagecentre[1]][imagecentre[0]] = -0.99
@@ -107,14 +151,45 @@ def analyse_shifts(beamname):
 
 
 
-
+def rm_ext(filepath):
+    """Rm file extension"""
+    x = filepath.split(".")
+    x.pop()
+    no_ext = ""
+    for s in x:
+        no_ext=no_ext+s
+    return no_ext 
 
 
 
 
 if __name__=="__main__":
     
-    print()
-    beamname = input("Enter beam name (both entry and exit spots must be present):\n")
-    analyse_shifts("manual_winlvs_test/"+beamname)
+    #myfile = easygui.fileopenbox(msg="Choose a beamfile", default=r"C:\pathtofiles")
+    beamfile = str(easygui.fileopenbox(msg="Choose a beamfile"))
+    beampath = rm_ext(beamfile)
+
+    print("Entry spot:")
+    print_arc_radial_widths( beampath, spot="Entry" )
+    print_spot_diameter( beampath, spot="Entry" )
+    print("Exit spot:")
+    print_arc_radial_widths( beampath, spot="Exit" )
+    print_spot_diameter( beampath, spot="Exit" )
+
+
+    print( "Shifts in BEV coordinates: ")
+    print_shifts(beampath)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
