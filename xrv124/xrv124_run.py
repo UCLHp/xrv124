@@ -114,6 +114,16 @@ def main():
         exit(0)
 
 
+
+    ############## IMAGE TO BEV CONVERSION ###################
+    # Analyse_shifts method works in image coordinate system
+    # IMG-Y = -BEV-Y hence if we want results in BEV:
+    for key in results_shifts:
+        results_shifts[key][1] *= -1
+    ##########################################################
+
+
+
     # Save results
     with open("results_shifts.txt","w") as json_file:
         json.dump(results_shifts, json_file)

@@ -117,10 +117,9 @@ def get_centroid_of_largest_region( img, threshold, ga=None, en=None ):
     # Centroid of first labeled object
     # Centroid coordinate tuple is (row, col) - i.e. (y,x) so need to flip it
     # Rounded to nearest pixel 
-    ##centroid = [ int(round(largest_region.centroid[1],0)), int(round(largest_region.centroid[0],0)) ] ## Now (x,y)
+    centroid = [ int(round(largest_region.centroid[1],0)), int(round(largest_region.centroid[0],0)) ] ## Now (x,y)
     # Leave coord as float 
     ##centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
-    centroid = [ largest_region.centroid[1], largest_region.centroid[0] ] ## Now (x,y)
 
     return centroid
 
@@ -128,7 +127,7 @@ def get_centroid_of_largest_region( img, threshold, ga=None, en=None ):
 
 
 def analyse_shifts(directory, beams, GANTRY, ENERGY):
-    """Analyse spot shifts in x,y of image coordinates
+    """Analyse spot shifts in x,y of IMAGE COORDINATES
 
     Q: define shift from centre of image or centre of spot???
 
@@ -201,15 +200,15 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
             # Need to be sure regionprops works well
             ############################################################################
             # Shift reported as centrOfImage - centreOfBBShadow
-            ####shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
+            shift_pixels = np.array(imagecentre) - np.array(shadowcentre)
             #
             # Shift as centreOfExitSpot - centreOfBBShadow            
-            ###shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
+            ##shift_pixels = np.array(exitspotcentre) - np.array(shadowcentre)
 
             # I think we should use some info from the spots rather than just the image
             # coordinate centre. DECISION: avg entry and exit spot centres and use a 
             # threshold value (to determine centroid) of 50%
-            shift_pixels = np.array(avgcentre) - np.array(shadowcentre)
+            ###shift_pixels = np.array(avgcentre) - np.array(shadowcentre)
             ########################################################################### 
 
             # i.e. record shift  as tuple (x,y)
