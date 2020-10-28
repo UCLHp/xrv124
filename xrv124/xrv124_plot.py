@@ -55,6 +55,8 @@ def plot_shifts_by_gantry(results, imgname=None):
         for en,c in zip(ENERGY,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(results[k][0], results[k][1], color=c, label=str(en) )
+            ax.plot( [-1.5,1.5], [0,0], linestyle=":", alpha=0.01 )
+            ax.plot( [0,0], [-1.5,1.5], linestyle=":", alpha=0.01 )
         ax.set_xlim(-1.5,1.5)
         ax.set_ylim(-1.5,1.5)
         ax.set_title("GA = {}".format(str(ga)))
@@ -90,6 +92,8 @@ def plot_shifts_by_energy(results, imgname=None):
         for ga,c in zip(GANTRY,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(results[k][0], results[k][1], color=c, label=str(ga))
+            ax.plot( [-1.5,1.5], [0,0], linestyle=":", alpha=0.01 )
+            ax.plot( [0,0], [-1.5,1.5], linestyle=":", alpha=0.01 )
         ax.set_xlim(-1.5,1.5)
         ax.set_ylim(-1.5,1.5)
         ax.set_title("E = {} MeV".format(str(en)))
