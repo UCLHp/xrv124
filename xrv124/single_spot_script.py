@@ -162,6 +162,63 @@ def rm_ext(filepath):
 
 
 
+def total_shift_3d(p1, p2, iso):
+    """Calculate the distance a beam, defined by central points p1 and p2 of
+    the entry and exit spot, misses the given isocentre position in the 3D 
+    Logos coordinate system"""
+    # Eq (8):
+    #https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+
+    a=np.cross(p2-p1, p1-iso)    
+    numer = a.dot(a)
+    b = p2-p1
+    denom = b.dot(b)
+
+    d_sq = numer/denom
+    return d_sq**0.5
+
+
+
+def shift_vector_logos_coords(beamfile,iso):
+    """Calculate 3D shift vector, in Logos coord system, from the isocentre
+    to the closest point on beam vector"""
+
+    # Get centre coords of entry/exit spots, p1/p2
+    dataline = ""
+    with open( beamfile ) as f:
+        for line in f.readlines():
+            if "XRV Beam Data" in line:
+                dataline=line
+    sl = dataline.split(",")
+    p1 = np.array( [sl[2],sl[3],sl[4]] ).astype(float)
+    p2 = np.array( [sl[6],sl[7],sl[8]] ).astype(float)
+
+
+    # Eq (3):
+    #https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+    num = (p1-iso).dot(p2-p1)
+    denom = (p2-p1).dot(p2-p1)
+    t = -num/denom
+
+    # Closest point on vector to iso
+    x = p1[0] + (p2[0]-p1[0])*t
+    y = p1[1] + (p2[1]-p1[1])*t
+    z = p1[2] + (p2[2]-p1[2])*t
+    c = np.array( [x,y,z] )
+
+    shift_vector = iso - c
+    return shift_vector
+
+    
+
+
+
+
+
+
+
+
+
 
 if __name__=="__main__":
     
@@ -172,13 +229,27 @@ if __name__=="__main__":
     print("Entry spot:")
     print_arc_radial_widths( beampath, spot="Entry" )
     print_spot_diameter( beampath, spot="Entry" )
-    print("Exit spot:")
-    print_arc_radial_widths( beampath, spot="Exit" )
-    print_spot_diameter( beampath, spot="Exit" )
+    #print("Exit spot:")
+    #print_arc_radial_widths( beampath, spot="Exit" )
+    #print_spot_diameter( beampath, spot="Exit" )
 
 
-    print( "Shifts in BEV coordinates: ")
+    print( "Shifts in BEV coordinates (mm): ")
     print_shifts(beampath)
+    
+
+
+    #####################
+
+    ## Position of isocentre (ball bearing)
+    iso = np.array( [0,0,144.8] )  # From AW commissioning doc
+
+    print( "Shifts in Logos coordinates (mm): " )
+    #shift_vect = shift_vector_logos_coords(p1,p2,iso)
+    shift_vect = shift_vector_logos_coords(beampath+".csv",iso)
+    print("    Iso-closest =", shift_vect )
+    print("    Abs shift = ", (shift_vect.dot(shift_vect))**0.5 )
+
 
 
 
