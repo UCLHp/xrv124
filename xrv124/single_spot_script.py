@@ -1,4 +1,4 @@
-from os.path import isfile, join, splitext
+from os.path import isfile, join, splitext 
 import numpy as np
 from skimage.measure import label, regionprops, profile_line
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ def get_image_data(filename):
     nrows = int( spotdata[2].split(",")[1].strip() )    # or is this x dim => no. columns?
     ncols = int( spotdata[2].split(",")[2].strip() )    # y dim => no. rows?
     
-    spotimage = np.zeros( [nrows,ncols] )   ## format np([rows,cols])
+    spotimage = np.zeros( [nrows,ncols] )   ## format np([rows,cols])  
 
     for row in range(3,nrows+3): # Image data starts on fourth row
         spotimage[row-3] = np.array( spotdata[row].split(",") ).astype(float)
@@ -97,6 +97,7 @@ def print_shifts(beamname):
         print("WARNING: Pitch of entry and exit spots differs!!")
         #TODO: deal with unequal entry/exit spot sizes
     pitch = pitch_en
+    
 
     nrows = entry.shape[0]
     ncols = entry.shape[1]
@@ -212,8 +213,19 @@ def shift_vector_logos_coords(beamfile,iso):
     
 
 
-
-
+def print_pixel_stats(spotfile):
+    """Print min/max pixel values for entry/exit spot
+    """
+   
+    entry_max, exit_max = None, None
+    with open( spotfile+".csv" ) as f:
+        for line in f.readlines():
+            if "XRV Beam Data" in line:
+                entry_max = line.split("Gray,")[1].split(",")[0].strip()
+                exit_max = line.split("ExitGray,")[1].split(",")[0].strip()
+                            
+    print("    Entry spot: {}".format(entry_max) )
+    print("    Exit spot: {}".format(exit_max) )
 
 
 
@@ -225,8 +237,14 @@ if __name__=="__main__":
     #myfile = easygui.fileopenbox(msg="Choose a beamfile", default=r"C:\pathtofiles")
     beamfile = str(easygui.fileopenbox(msg="Choose a beamfile"))
     beampath = rm_ext(beamfile)
+    
+    
+    print("\nMax pixel gray values: ")
+    print_pixel_stats(beampath)
 
-    print("Entry spot:")
+
+
+    print("Entry spot size:")
     print_arc_radial_widths( beampath, spot="Entry" )
     print_spot_diameter( beampath, spot="Entry" )
     #print("Exit spot:")
@@ -234,33 +252,19 @@ if __name__=="__main__":
     #print_spot_diameter( beampath, spot="Exit" )
 
 
-    print( "Shifts in BEV coordinates (mm): ")
+    print( "Shifts in BEV coordinates (mm)  (CentreOfExitSpot - CentreOfShadow): ")
     print_shifts(beampath)
     
-
 
     #####################
 
     ## Position of isocentre (ball bearing)
-    iso = np.array( [0,0,144.8] )  # From AW commissioning doc
+    #iso = np.array( [0,0,144.8] )  # From AW commissioning doc
+    iso = np.array( [0,0,145.0] )  # From SC/PI commissioning doc
 
-    print( "Shifts in Logos coordinates (mm): " )
+    print( "Closest approach to Target Isocentre (BB):" )
+    ##; Logos coordinates (mm) : " )
     #shift_vect = shift_vector_logos_coords(p1,p2,iso)
     shift_vect = shift_vector_logos_coords(beampath+".csv",iso)
-    print("    Iso-closest =", shift_vect )
-    print("    Abs shift = ", (shift_vect.dot(shift_vect))**0.5 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print("    Shift vector (TargetIso - ClosestPoint) =", shift_vect )
+    print("    Abs distance = ", (shift_vect.dot(shift_vect))**0.5 )
