@@ -1,26 +1,21 @@
 import sys
-from os import listdir
-from os.path import isfile, join, splitext
+from os.path import join
 from math import sin, cos, radians
+
 import numpy as np
-import matplotlib.pyplot as plt
-from skimage import data, util
 from skimage.measure import label, regionprops, profile_line
-import easygui
-import json
 # Robust alternative to curve_fit
 from lmfit import Model
 from lmfit import Parameters
 
-
+import config
 
 
 
 # % threshold for finding centre of BB shadow in entry-exit image
-THRESHOLD = 50.0   
-
+THRESHOLD = config.THRESHOLD   
 # % threshold for finding centroid of spots
-THRESH_CENTROID = 50.0
+THRESH_CENTROID = config.THRESH_CENTROID
 
 
 

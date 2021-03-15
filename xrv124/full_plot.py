@@ -1,15 +1,16 @@
 import json
+from math import radians
+
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 import easygui
 
+import config
 
-###############################################
-GANTRY = list( range(180,-181,-30) )
-ENERGY = [245,240]+list( range(230,69,-10) )
-#https://matplotlib.org/gallery/lines_bars_and_markers/markevery_demo.html#sphx-glr-gallery-lines-bars-and-markers-markevery-demo-py
-###############################################
+
+GANTRY = config.GANTRY
+ENERGY = config.ENERGY
 
 
 def select_file():
@@ -195,6 +196,84 @@ def plot_xyshifts_vs_energy(results, imgname=None):
         plt.show()
 
 
+def shifts_histogram(shifts, imgname=None):
+    """Histogram of shifts from all spots
+    
+    Input: dictionary {"GA180E150":[xshift,yshift],...}
+    """
+    #with open(shifts22, encoding='utf-8') as F:
+    #    shifts = json.loads(F.read())
+    # Absolute displacement
+    displacements=[]
+    for key in shifts:
+        xy = shifts[key]
+        total_shift = (xy[0]**2 + xy[1]**2)**0.5
+        displacements.append(total_shift)
+    
+    bins = [0+i*0.1 for i in range(25)]
+    fig=plt.figure()
+    plt.hist(displacements, bins=bins)
+    plt.title("Histogram of absolute spot shifts")
+    plt.xlabel("Shift (mm)")
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()
+        
+        
+        
+        
+def shifts_polar(shifts, imgname=None):
+    """Polar plot of shifts from all spots
+    
+    Input: dictionary {"GA180E150":[xshift,yshift],...}
+    """
+    #ENERGY = [245,240]+list( range(230,69,-10) )
+    #with open(shifts22, encoding='utf-8') as F:
+    #    shifts = json.loads(F.read())  
+           
+    # Absolute displacement
+    displacements = {}
+    for key in shifts:
+        xy = shifts[key]
+        total_shift = (xy[0]**2 + xy[1]**2)**0.5
+        displacements[key] = total_shift
+    
+    colors = cm.rainbow(np.linspace(0, 1, len(ENERGY)))
+    ga=[]
+    en=[]
+    d=[]
+    cols=[]   
+    for key in displacements:
+        angle = int(key.split("GA")[1].split("E")[0])   
+        ga.append( radians(angle) )
+        energy = int(key.split("E")[1])
+        en.append(energy)
+        cols.append( colors[ENERGY.index(energy)] )        
+        d.append(displacements[key])    
+
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})   
+    ax.set_rmax(2)
+    ax.set_rticks([0.5, 1.0, 1.5, 2.0, 2.5])  # Radial ticks
+    ax.set_rlabel_position(80)  # Move radial labels away from plotted line
+    ax.grid(True)
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)  
+    for angle,energy,dist,c in zip(ga,en,d,cols):
+        ax.plot(angle,dist,color=c,marker='o',label=str(energy))
+    plt.title("Polar plot of absolute spot shifts (mm)\n")
+    
+    # Set legend with energy
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict( zip(labels,handles) )
+    fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(1.02,0.95),ncol=1, title="Energy (MeV)", frameon=False ) 
+    #fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.175,0.95),ncol=1, title="Energy (MeV)") 
+
+    
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi) #, bbox_inches='tight'
+    else:
+        plt.show()
 
 
 
@@ -301,6 +380,9 @@ def plot_spot_sigmas(results, imgname=None, arc_radial=False):
         fig.savefig(imgname, dpi=fig.dpi)
     else:
         plt.show()
+
+
+
 
 
 

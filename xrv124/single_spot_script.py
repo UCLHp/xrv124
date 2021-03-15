@@ -1,6 +1,6 @@
-from os.path import isfile, join, splitext 
+from os.path import join
 import numpy as np
-from skimage.measure import label, regionprops, profile_line
+from skimage.measure import label, regionprops#, profile_line
 import matplotlib.pyplot as plt
 import easygui
 
