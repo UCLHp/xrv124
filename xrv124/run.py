@@ -14,6 +14,8 @@ import config
 GANTRY = config.GANTRY
 ENERGY = config.ENERGY
 
+TARGET = config.TARGET
+
 print("\n")
 print("GANTRY={}".format(GANTRY))
 print("ENERGY={}".format(ENERGY)) 
@@ -45,7 +47,7 @@ def get_filenames(directory):
 def check_files(filenames):
     """Return true if all expected files present
 
-    e.g. 19 energies, 13 GAs, 3 files each (csv,txt,bmp)
+    e.g. energies*GAs*3 files each (csv,txt,bmp)
     """
     #Remove file extension
     #s="."
@@ -100,7 +102,7 @@ def full_analysis(directory, beams):
     results_sigmas = {}
     ##equiv_diams = {}
     print("Analyzing spot shifts...")
-    results_shifts = xan.analyse_shifts(directory, beams, GANTRY, ENERGY)  ## FEED GANTRY AND ENERGY HERE
+    results_shifts = xan.analyse_shifts(directory, beams, GANTRY, ENERGY)
     print("Reading spot diameters...")
     results_spot_diameters = xan.read_spot_diameters(directory, beams, GANTRY, ENERGY)
     #exit()
@@ -109,6 +111,12 @@ def full_analysis(directory, beams):
     print("Reading arc and radial entry spot widths...")
     results_arc_radial = xan.read_arc_radial_widths(directory, beams, GANTRY, ENERGY)
     
+    ## 3D SHIFTS VECToRS IN LOGOS COORDINATES
+    print("Calculating 3D shifts (presence of ball bearing will reduce accuracy)...")
+    results_3d_shifts = xan.shift_vector_logos_coords(directory, beams, GANTRY, ENERGY, TARGET)
+    with open(join(result_dir,"results_3d_shifts.txt"),"w") as json_file:
+        json.dump(results_3d_shifts, json_file)
+    
     
     ############## IMAGE TO BEV CONVERSION ########################
     # The analyse_shifts method works in image coordinate system.
@@ -116,6 +124,7 @@ def full_analysis(directory, beams):
     for key in results_shifts:
         results_shifts[key][1] *= -1
     ##############################################################
+    
     
     # Save results
     with open(join(result_dir,"results_shifts.txt"),"w") as json_file:

@@ -13,9 +13,16 @@ import easygui
 ################################################################
 
 
+
+
+
+# Coords of ball-bearing from commissioning doc
+TARGET = np.array( [0,0,145.0] )  
+
+
 # Threshold (%) for finding centre of shadow in entry-exit image
 THRESHOLD = 50.0   
-###########################
+
 
 
 
@@ -165,7 +172,7 @@ def rm_ext(filepath):
 
 def total_shift_3d(p1, p2, iso):
     """Calculate the distance a beam, defined by central points p1 and p2 of
-    the entry and exit spot, misses the given isocentre position in the 3D 
+    the entry and exit spot, misses the given target position in the 3D 
     Logos coordinate system"""
     # Eq (8):
     #https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -260,11 +267,11 @@ if __name__=="__main__":
 
     ## Position of isocentre (ball bearing)
     #iso = np.array( [0,0,144.8] )  # From AW commissioning doc
-    iso = np.array( [0,0,145.0] )  # From SC/PI commissioning doc
+    #iso = np.array( [0,0,145.0] )  # From SC/PI commissioning doc
 
     print( "Closest approach to Target Isocentre (BB):" )
     ##; Logos coordinates (mm) : " )
     #shift_vect = shift_vector_logos_coords(p1,p2,iso)
-    shift_vect = shift_vector_logos_coords(beampath+".csv",iso)
+    shift_vect = shift_vector_logos_coords(beampath+".csv",TARGET)
     print("    Shift vector (TargetIso - ClosestPoint) =", shift_vect )
     print("    Abs distance = ", (shift_vect.dot(shift_vect))**0.5 )

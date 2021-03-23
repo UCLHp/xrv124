@@ -239,6 +239,80 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
 
 
 
+
+def total_shift_3d(p1, p2, target):
+    """Calculate the distance a beam, defined by central points p1 and p2 of
+    the entry and exit spot, misses the given target position in the 3D 
+    Logos coordinate system"""
+    # Eq (8):
+    #https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+
+    a=np.cross(p2-p1, p1-target)    
+    numer = a.dot(a)
+    b = p2-p1
+    denom = b.dot(b)
+
+    d_sq = numer/denom
+    return d_sq**0.5
+
+
+
+def shift_vector_logos_coords(directory, beams, GANTRY, ENERGY, target):
+    """Calculate 3D shift vector, in Logos coord system, from the isocentre
+    to the closest point on beam vector"""
+    
+    shifts_3d = {}
+    cnt=-1
+    for ga in GANTRY:
+        for en in ENERGY:
+            cnt+=1
+            
+            progress_bar(cnt, len(beams) )
+    
+            # key for storing result
+            k = "GA"+str(ga)+"E"+str(en)
+    
+            beamfile = join(directory,beams[cnt])+".csv" 
+            # Get centre coords of entry/exit spots, p1/p2
+            dataline = ""
+            with open( beamfile ) as f:
+                for line in f.readlines():
+                    if "XRV Beam Data" in line:
+                        dataline=line
+            sl = dataline.split(",")
+            p1 = np.array( [sl[2],sl[3],sl[4]] ).astype(float)
+            p2 = np.array( [sl[6],sl[7],sl[8]] ).astype(float)                
+            
+           ## shift = total_3d_shift(p1,p2,target)
+
+            # Eq (3):
+            #https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            num = (p1-target).dot(p2-p1)
+            denom = (p2-p1).dot(p2-p1)
+            t = -num/denom
+
+            # Closest point on vector to iso
+            x = p1[0] + (p2[0]-p1[0])*t
+            y = p1[1] + (p2[1]-p1[1])*t
+            z = p1[2] + (p2[2]-p1[2])*t
+            c = np.array( [x,y,z] )
+        
+            shift_vector = target - c 
+            # need list for json dump
+            shifts_3d[k] = list(shift_vector)
+            
+    # New line after porgress bar
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+    return shifts_3d
+
+
+
+
+
+
+
+
 def read_spot_diameters(directory, beams, GANTRY, ENERGY):
     """Retrieve entry spot "diameter" from csv file
     FUNCTION WILL NOT WORK IF THERE IS MISSING DATA

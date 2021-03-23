@@ -65,7 +65,7 @@ def plot_shifts_by_gantry(results, imgname=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict( zip(labels,handles) )
     fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.62,0.22), ncol=3, title="Energy (MeV)" ) 
-    fig.suptitle("(x,y) shifts in mm at each GA", fontsize=16)
+    fig.suptitle("BEV (x,y) shifts in mm", fontsize=16)
     plt.xlabel("x shift (mm)")
     plt.ylabel("y shift (mm)")
     if imgname is not None:
@@ -102,7 +102,7 @@ def plot_shifts_by_energy(results, imgname=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict( zip(labels,handles) )
     fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.97,0.23), ncol=2, title="GA (degrees)" )
-    fig.suptitle("(x,y) shifts in mm at each energy", fontsize=16)
+    fig.suptitle("BEV (x,y) shifts in mm", fontsize=16)
     plt.xlabel("x shift (mm)")
     plt.ylabel("y shift (mm)")
     if imgname is not None:
@@ -145,7 +145,7 @@ def plot_xyshifts_vs_gantry(results, imgname=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict( zip(labels,handles) )
     fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.92,0.2), ncol=1, title="Image axis" )
-    fig.suptitle("Shifts (mm) vs GA for a given energy", fontsize=16)
+    fig.suptitle("Shifts (mm) vs GA", fontsize=16)
     plt.xlabel("GA (degree)")
     plt.ylabel("Shift (mm)")
     if imgname is not None:
@@ -187,7 +187,7 @@ def plot_xyshifts_vs_energy(results, imgname=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict( zip(labels,handles) )
     fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.5,0.18), ncol=1, title="Image axis" )
-    fig.suptitle("Shifts (mm) vs energy for a given GA", fontsize=16)
+    fig.suptitle("Shifts (mm) vs energy", fontsize=16)
     plt.xlabel("Energy (MeV)")
     plt.ylabel("Shift (mm)")
     if imgname is not None:
@@ -213,7 +213,8 @@ def shifts_histogram(shifts, imgname=None):
     bins = [0+i*0.1 for i in range(25)]
     fig=plt.figure()
     plt.hist(displacements, bins=bins)
-    plt.title("Histogram of absolute spot shifts")
+    #plt.title("Absolute spot shifts (mm)")
+    plt.ylabel("Frequency")
     plt.xlabel("Shift (mm)")
     if imgname is not None:
         fig.savefig(imgname, dpi=fig.dpi)
@@ -261,7 +262,7 @@ def shifts_polar(shifts, imgname=None):
     ax.set_theta_direction(-1)  
     for angle,energy,dist,c in zip(ga,en,d,cols):
         ax.plot(angle,dist,color=c,marker='o',label=str(energy))
-    plt.title("Polar plot of absolute spot shifts (mm)\n")
+    plt.title("Absolute spot shifts (mm)\n")
     
     # Set legend with energy
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -297,7 +298,7 @@ def plot_spot_diameters_by_gantry(results, imgname=None):
         for en,c in zip(ENERGY,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(en, results[k], color=c, label=str(en) )
-        ax.set_ylim(7,15) # tune this to better see the oscilatory nature
+        ax.set_ylim(6,15) # tune this to better see the oscilatory nature
         ax.set_title("GA = {}".format(str(ga)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -330,7 +331,7 @@ def plot_spot_diameters_by_energy(results, imgname=None):
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(ga, results[k], color=c, label=str(ga) )
         ax.set_xlim(-200,200)
-        ax.set_ylim(7,15) #use this to better see the oscilatory nature
+        ax.set_ylim(6,15) #use this to better see the oscilatory nature
         ax.set_title("E = {} MeV".format(str(en)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -367,7 +368,7 @@ def plot_spot_sigmas(results, imgname=None, arc_radial=False):
         ax.set_xlim(-200,200)
         ax.set_ylim(2,8) #use this to better see the oscilatory nature
         if arc_radial:
-            ax.set_ylim(6.8,15.8) ## diff lims if plotting arc & radial widths
+            ax.set_ylim(6,15.8) ## diff lims if plotting arc & radial widths
         ax.set_title("E = {} MeV".format(str(en)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
