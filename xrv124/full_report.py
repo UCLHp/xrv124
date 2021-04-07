@@ -1,10 +1,5 @@
 import json
-import matplotlib.pyplot as plt
-from matplotlib import cm
-import numpy as np
-import easygui
 
-from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_JUSTIFY
 from reportlab.lib.pagesizes import letter
@@ -12,11 +7,10 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
+import config
 
-###############################################
-GANTRY = list( range(180,-181,-30) )
-ENERGY = [245,240]+list( range(230,69,-10) )
-###############################################
+GANTRY = config.GANTRY
+ENERGY = config.ENERGY
 
 
 
