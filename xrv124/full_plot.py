@@ -208,11 +208,13 @@ def shifts_histogram(shifts, imgname=None):
     for key in shifts:
         xy = shifts[key]
         total_shift = (xy[0]**2 + xy[1]**2)**0.5
+        ##if total_shift>0.99:
+        ##    print("2D {} = {}mm".format(key,total_shift))
         displacements.append(total_shift)
     
     bins = [0+i*0.1 for i in range(25)]
     fig=plt.figure()
-    plt.hist(displacements, bins=bins)
+    plt.hist(displacements, bins=bins, align="left")
     #plt.title("Absolute spot shifts (mm)")
     plt.ylabel("Frequency")
     plt.xlabel("Shift (mm)")
@@ -220,7 +222,34 @@ def shifts_histogram(shifts, imgname=None):
         fig.savefig(imgname, dpi=fig.dpi)
     else:
         plt.show()
-        
+   
+    
+def shifts_3d_histogram(shifts_3d, imgname=None):
+    """Histogram of shifts in 3D Logos coords from all spots
+    
+    Input: dictionary {"GA180E150":[xshift,yshift,zshift],...}
+    """
+    #with open(shifts_3d22, encoding='utf-8') as F:
+    #    shifts_3d = json.loads(F.read())
+    ## Absolute displacement
+    displacements=[]
+    for key in shifts_3d:
+        xyz = shifts_3d[key]
+        total_shift = (xyz[0]**2 + xyz[1]**2 + xyz[2]**2)**0.5
+        ##if total_shift>0.99:
+        ##    print("3D {} = {}mm".format(key,total_shift))
+        displacements.append(total_shift)
+    
+    bins = [0+i*0.1 for i in range(25)]
+    fig=plt.figure()
+    plt.hist(displacements, bins=bins, align="left")
+    plt.title("Absolute shifts in 3D Logos coords (mm)")
+    plt.ylabel("Frequency")
+    plt.xlabel("Shift (mm)")
+    if imgname is not None:
+        fig.savefig(imgname, dpi=fig.dpi)
+    else:
+        plt.show()     
         
         
         

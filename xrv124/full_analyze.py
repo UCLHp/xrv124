@@ -4,7 +4,6 @@ from math import sin, cos, radians
 
 import numpy as np
 from skimage.measure import label, regionprops, profile_line
-# Robust alternative to curve_fit
 from lmfit import Model
 from lmfit import Parameters
 

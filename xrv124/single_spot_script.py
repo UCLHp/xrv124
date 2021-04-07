@@ -17,7 +17,7 @@ import easygui
 
 
 # Coords of ball-bearing from commissioning doc
-TARGET = np.array( [0,0,145.0] )  
+TARGET = np.array( [0,0,144.8] )  
 
 
 # Threshold (%) for finding centre of shadow in entry-exit image
