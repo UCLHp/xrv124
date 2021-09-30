@@ -1,7 +1,10 @@
 from os import listdir, mkdir
-from os.path import isfile, splitext, join
-import easygui
+from os.path import isfile, splitext, join, getctime
 import json
+import csv
+import datetime
+
+import easygui
 
 import full_analyze as xan
 import full_plot as xplot
@@ -33,6 +36,28 @@ def choose_directory():
     else:
         exit(0)
     return easygui.diropenbox()
+
+
+def choose_gantry():
+    """Choose current gantry
+    """
+    gantries = ["Gantry 1", "Gantry 2", "Gantry 3", "Gantry 4"]
+    gname = easygui.buttonbox("\n\n\t  Select the correct gantry", "Gantry", gantries)
+    if gname not in gantries:
+        easygui.msgbox("\n\n\n\t\t   No gantry selected; exiting")
+        exit(0)
+    gnum = gname.split(" ")[1]
+    return gnum
+
+
+def get_acquisition_date(file):
+    """Return date of data acquisition from data file timestamp
+    
+    This only works on Windows OS
+    """
+    tt = getctime(file)
+    date = datetime.datetime.fromtimestamp(tt).date()
+    return str(date)
 
 
 
@@ -99,11 +124,12 @@ def make_results_directory(attempted_name):
     return result_dir           
                 
 
-def full_analysis(directory, beams):
+def full_analysis(directory, beams, gantry_num, date):
     """Analsysis of full data set"""
     
     # New directory for results
-    result_dir = make_results_directory("full_results")
+    res_dir_name = "G"+gantry_num+"_"+str(date)+"_xrv124"
+    result_dir = make_results_directory(res_dir_name)
     print("Results will be printed to {}".format(result_dir))
 
       
@@ -186,6 +212,22 @@ def full_analysis(directory, beams):
 
 
 
+    print("Generating data for database...")
+    # Store x and y shifts plus Logos-diameter for each spot
+    db_results = join(result_dir,"db_results.csv")
+    # need newline to avoid blank lines
+    with open(db_results,'w', encoding='UTF8',newline='') as f:
+        writer = csv.writer(f)
+        header = ["Date","Gantry","GA","E","x-offset","y-offset","Diameter"]
+        writer.writerow(header)
+        for key in results_shifts:
+            ga = key.split("GA")[1].split("E")[0]
+            e = key.split("E")[1]
+            xoff,yoff = results_shifts[key]
+            diam = results_spot_diameters[key]
+            
+            data = [date,gantry_num,ga,e,xoff,yoff,diam]
+            writer.writerow(data)
 
 
 
@@ -193,13 +235,16 @@ def full_analysis(directory, beams):
 def main():
 
     directory = choose_directory()
+    gantry_name = choose_gantry()
     filenames = get_filenames(directory)
     filesok = check_files(filenames)
+    
+    date = get_acquisition_date( join(directory,filenames[0]) )
 
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(directory, beams)
+        full_analysis(directory, beams, gantry_name, date)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"

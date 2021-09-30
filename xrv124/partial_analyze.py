@@ -9,5 +9,6 @@ knowing the energy of a beam.
 """
 
 def analysis():
-    print("Not implemented yet")
+    print("Please check that the full data has been captured")
+    print("Partial analysis not implemented yet")
 
