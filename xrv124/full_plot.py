@@ -327,7 +327,7 @@ def plot_spot_diameters_by_gantry(results, imgname=None):
         for en,c in zip(ENERGY,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(en, results[k], color=c, label=str(en) )
-        ax.set_ylim(6,15) # tune this to better see the oscilatory nature
+        ax.set_ylim(4,15) # tune this to better see the oscilatory nature
         ax.set_title("GA = {}".format(str(ga)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -360,7 +360,7 @@ def plot_spot_diameters_by_energy(results, imgname=None):
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(ga, results[k], color=c, label=str(ga) )
         ax.set_xlim(-200,200)
-        ax.set_ylim(6,15) #use this to better see the oscilatory nature
+        ax.set_ylim(4,15) #use this to better see the oscilatory nature
         ax.set_title("E = {} MeV".format(str(en)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -391,19 +391,27 @@ def plot_spot_sigmas(results, imgname=None, arc_radial=False):
     for en,ax in zip(ENERGY,axs):  
         for ga in GANTRY:    
             k="GA"+str(ga)+"E"+str(en)
-            ax.scatter(ga, results[k][0], color="red", label="x_sigma", alpha=0.7 )
-            ax.scatter(ga, results[k][1], color="blue", label="y_sigma", alpha=0.7 )
+            xlabel="x_sigma"
+            ylabel="y_sigma"
+            if arc_radial:
+                xlabel="arc width"
+                ylabel="radial width"
+            ax.scatter(ga, results[k][0], color="red", label=xlabel, alpha=0.7 )
+            ax.scatter(ga, results[k][1], color="blue", label=ylabel, alpha=0.7 )
 
         ax.set_xlim(-200,200)
         ax.set_ylim(2,8) #use this to better see the oscilatory nature
         if arc_radial:
-            ax.set_ylim(6,15.8) ## diff lims if plotting arc & radial widths
+            ax.set_ylim(4,15.8) ## diff lims if plotting arc & radial widths
         ax.set_title("E = {} MeV".format(str(en)))
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict( zip(labels,handles) )
-    fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.96,0.22), ncol=1, title="Axis" ) 
-    fig.suptitle("Spot sigmas (mm) vs GA", fontsize=16)
+    fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.96,0.22), ncol=1, title="Axis" )
+    if arc_radial:
+        fig.suptitle("Spot arc/radial widths vs GA", fontsize=16)
+    else:
+        fig.suptitle("Spot sigmas (mm) vs GA", fontsize=16)
     plt.xlabel("Gantry angle)")
     plt.ylabel("Diameter (mm)")
     if imgname is not None:
