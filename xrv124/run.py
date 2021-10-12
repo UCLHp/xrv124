@@ -60,7 +60,6 @@ def get_acquisition_date(file):
     return str(date)
 
 
-
 def get_filenames(directory):
     """Returns list of files in directory
     """
@@ -124,11 +123,11 @@ def make_results_directory(attempted_name):
     return result_dir           
                 
 
-def full_analysis(directory, beams, gantry_num, date):
+def full_analysis(directory, beams, gantry_num, acq_date):
     """Analsysis of full data set"""
     
     # New directory for results
-    res_dir_name = "G"+gantry_num+"_"+str(date)+"_xrv124"
+    res_dir_name = "G"+gantry_num+"_"+str(acq_date)+"_xrv124"
     result_dir = make_results_directory(res_dir_name)
     print("Results will be printed to {}".format(result_dir))
 
@@ -167,8 +166,6 @@ def full_analysis(directory, beams, gantry_num, date):
         json.dump(results_3d_shifts, json_file)
     xplot.shifts_3d_histogram(results_3d_shifts, imgname=join(result_dir,"shifts_3d_histo.png"))  
     """
-    
-    
       
     results_spot_diameters = {}
     results_sigmas = {}
@@ -198,9 +195,8 @@ def full_analysis(directory, beams, gantry_num, date):
                                arc_radial=True)
     
 
-
     print("Generating summary PDF report...")
-    xreport.summary_reportlab(results_shifts, 
+    xreport.summary_reportlab(results_shifts, acq_date, gantry_num,
                 images=[join(result_dir,"shifts_by_gantry.png"),
                         join(result_dir,"shifts_by_energy.png"),
                         join(result_dir,"shifts_histo.png"),
@@ -208,8 +204,6 @@ def full_analysis(directory, beams, gantry_num, date):
                        ],
                 output=join(result_dir,"Summary report.pdf")
                 )
-
-
 
 
     print("Generating data for database...")
@@ -226,7 +220,7 @@ def full_analysis(directory, beams, gantry_num, date):
             xoff,yoff = results_shifts[key]
             diam = results_spot_diameters[key]
             
-            data = [date,gantry_num,ga,e,xoff,yoff,diam]
+            data = [acq_date,gantry_num,ga,e,xoff,yoff,diam]
             writer.writerow(data)
 
 
@@ -239,12 +233,12 @@ def main():
     filenames = get_filenames(directory)
     filesok = check_files(filenames)
     
-    date = get_acquisition_date( join(directory,filenames[0]) )
+    acq_date = get_acquisition_date( join(directory,filenames[0]) )
 
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(directory, beams, gantry_name, date)
+        full_analysis(directory, beams, gantry_name, acq_date)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"

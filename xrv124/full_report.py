@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_JUSTIFY
@@ -30,6 +31,10 @@ Suspension limit:	>2.5mm for any energy at any gantry angle.
 # ReportLab user guide: https://www.reportlab.com/docs/reportlab-userguide.pdf
 
 
+def get_date():
+    """Return today's date"""
+    return str( datetime.date.today() )
+
 
 def get_total_displacement( shifts ):
     """Convert x,y shifts to total displacement"""
@@ -40,8 +45,6 @@ def get_total_displacement( shifts ):
         displacements[key] = total_shift
 
     return displacements
-
-
 
 
 def get_table_data(displacements):
@@ -107,12 +110,14 @@ def get_table_data(displacements):
 
 
 
-def summary_reportlab( shifts, images=None, output=None ):
+def summary_reportlab( shifts, acq_date, gantry_num, images=None, output=None ):
     """Print a pdf report of the beam shift results
 
     'shifts' input is a dictionary in form { "GA0E240":[xshift, yshift] }
     where x and y are in the image (hence BEV) coordinate system
     """
+    
+    curr_date = get_date()
 
     # Check if single image or list is provided
     images_to_plot = []
@@ -151,8 +156,15 @@ def summary_reportlab( shifts, images=None, output=None ):
     styles.add(ParagraphStyle(name='Indent', alignment=TA_JUSTIFY, leftIndent=20))
     styles.add(ParagraphStyle(name='Underline', alignment=TA_JUSTIFY, underlineWidth=1))
       
-    title = '<font size="15"><u> Logos XRV-124 monthly QA results </u></font>'
+    title = '<font size="14"><u> Logos XRV-124 monthly QA results</u></font>'
     Story.append(Paragraph(title, styles["Justify"]))
+    Story.append(Spacer(1, 10))
+    gantryline = '<font size="10">Gantry {}</font>'.format(gantry_num)
+    Story.append(Paragraph(gantryline, styles["Indent"]))
+    dateline_1 = '<font size="10">Acquisition date: {}</font>'.format(acq_date)
+    Story.append(Paragraph(dateline_1, styles["Indent"]))
+    dateline_2 = '<font size="10">Analysis date: {}</font>'.format(curr_date)
+    Story.append(Paragraph(dateline_2, styles["Indent"]))
     Story.append(Spacer(1, 50))
 
 
