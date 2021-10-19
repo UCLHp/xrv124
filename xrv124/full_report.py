@@ -10,8 +10,8 @@ from reportlab.lib.units import inch
 
 import config
 
-GANTRY = config.GANTRY
-ENERGY = config.ENERGY
+GANTRY_ANGLES = config.GANTRY_ANGLES
+ENERGIES = config.ENERGIES
 
 
 
@@ -57,7 +57,7 @@ def get_table_data(displacements):
     line_1 = ['Gantry', '50% energies < 1mm', 'Less than 5 energies > 1.5mm', 'No energy > 2mm']
     data.append(line_1)
 
-    for ga in GANTRY:
+    for ga in GANTRY_ANGLES:
         # Store beams that were out of certain tolerances
         gt_1 = []
         gt_1p5 = []
@@ -68,7 +68,7 @@ def get_table_data(displacements):
         data_line = ["NONE_ERROR"]*4   
         data_line[0] = str(ga)
 
-        for en in ENERGY:
+        for en in ENERGIES:
             k="GA"+str(ga)+"E"+str(en)
 
             if displacements[k] > 2.5:
@@ -96,7 +96,7 @@ def get_table_data(displacements):
             data_line[2] = "FAIL"
         else:
             data_line[2] = "pass"
-        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(ENERGY)/2.0:
+        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(ENERGIES)/2.0:
             #print("WARNING: 1.0mm Action Limit exceeded for GA={}\n".format(ga))
             #print( gt_1 + gt_1p5 + gt_2 + gt_2p5 )
             data_line[1]  = "FAIL"

@@ -4,50 +4,27 @@ import json
 import csv
 import datetime
 
-import easygui
+#import easygui
 
 import full_analyze as xan
 import full_plot as xplot
 import full_report as xreport
 import partial_analyze
 import config
+import gui
 
 
 #######################################
-GANTRY = config.GANTRY
-ENERGY = config.ENERGY
+GANTRY_ANGLES = config.GANTRY_ANGLES
+ENERGIES = config.ENERGIES
 
 TARGET = config.TARGET
 
 print("\n")
-print("GANTRY={}".format(GANTRY))
-print("ENERGY={}".format(ENERGY)) 
+print("GANTRY_ANGLES={}".format(GANTRY_ANGLES))
+print("ENERGIES={}".format(ENERGIES)) 
 #######################################
 
-
-
-def choose_directory():
-    """Choose directory containing acquisition files
-    """
-    msg = "Select data directory"
-    title = "Select data directory"
-    if easygui.ccbox(msg, title):
-        pass
-    else:
-        exit(0)
-    return easygui.diropenbox()
-
-
-def choose_gantry():
-    """Choose current gantry
-    """
-    gantries = ["Gantry 1", "Gantry 2", "Gantry 3", "Gantry 4"]
-    gname = easygui.buttonbox("\n\n\t  Select the correct gantry", "Gantry", gantries)
-    if gname not in gantries:
-        easygui.msgbox("\n\n\n\t\t   No gantry selected; exiting")
-        exit(0)
-    gnum = gname.split(" ")[1]
-    return gnum
 
 
 def get_acquisition_date(file):
@@ -85,7 +62,7 @@ def check_files(filenames):
     uniqnames = list( set(dignames) )
     print("uniquenames={}".format(len(uniqnames)) )
     
-    if( len(dignames)==len(GANTRY)*len(ENERGY)*3 and 
+    if( len(dignames)==len(GANTRY_ANGLES)*len(ENERGIES)*3 and 
             len(uniqnames)==len(dignames)//3 ):
         return True
     else:
@@ -101,40 +78,36 @@ def get_ordered_beams(filenames):
     return sorted(uniq, key=lambda e: int(e))
 
 
-def make_results_directory(attempted_name):
+def make_results_directory(basedir,attempted_name):
     """Make empty directory for results; return its name
     
     Try attempted_name; add integer if exists
     """
     result_dir = attempted_name
     try:
-        mkdir(result_dir)
+        mkdir( join(basedir,result_dir) )
     except Exception:  
         i=2
         looking=True
         while looking:
             try:
-                nm=result_dir+str(i)
-                mkdir(nm)
+                nm=result_dir+"_"+str(i)
+                mkdir( join(basedir,nm) )
                 result_dir=nm
                 looking=False
             except Exception:
                 i+=1     
-    return result_dir           
+    return join(basedir,result_dir)           
                 
 
-def full_analysis(directory, beams, gantry_num, acq_date):
+def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
     """Analsysis of full data set"""
-    
-    # New directory for results
-    res_dir_name = "G"+gantry_num+"_"+str(acq_date)+"_xrv124"
-    result_dir = make_results_directory(res_dir_name)
-    print("Results will be printed to {}".format(result_dir))
-
+     
+    result_dir=outputdir
       
     print("Analyzing BEV spot shifts...")
     results_shifts = {}
-    results_shifts = xan.analyse_shifts(directory, beams, GANTRY, ENERGY)
+    results_shifts = xan.analyse_shifts(directory, beams)
     ############## IMAGE TO BEV CONVERSION ########################
     # The analyse_shifts method works in image coordinate system.
     # IMG-Y = -BEV-Y hence if we want results in BEV coords:
@@ -170,7 +143,7 @@ def full_analysis(directory, beams, gantry_num, acq_date):
     results_spot_diameters = {}
     results_sigmas = {}
     print("Reading spot diameters...")
-    results_spot_diameters = xan.read_spot_diameters(directory, beams, GANTRY, ENERGY)
+    results_spot_diameters = xan.read_spot_diameters(directory, beams)
     with open(join(result_dir,"results_spot_diameters.txt"),"w") as json_file:
         json.dump(results_spot_diameters, json_file)    
     ## Spot diameter plots
@@ -179,7 +152,7 @@ def full_analysis(directory, beams, gantry_num, acq_date):
         
     
     print("Analzying spot sigmas...")
-    results_sigmas = xan.analyse_spot_profiles(directory, beams, GANTRY, ENERGY)
+    results_sigmas = xan.analyse_spot_profiles(directory, beams)
     with open(join(result_dir,"results_spot_sigmas.txt"),"w") as json_file:
         json.dump(results_sigmas, json_file)    
     ## Spot sigma (method can do either "image" or "spot" coordinate systems
@@ -187,7 +160,7 @@ def full_analysis(directory, beams, gantry_num, acq_date):
         
     
     print("Reading arc and radial entry spot widths...")
-    results_arc_radial = xan.read_arc_radial_widths(directory, beams, GANTRY, ENERGY)
+    results_arc_radial = xan.read_arc_radial_widths(directory, beams)
     with open(join(result_dir,"results_arc_radial.txt"),"w") as json_file:
         json.dump(results_arc_radial, json_file)
     ## Arc and radial widths from entry spot
@@ -228,17 +201,28 @@ def full_analysis(directory, beams, gantry_num, acq_date):
 
 def main():
 
-    directory = choose_directory()
-    gantry_name = choose_gantry()
-    filenames = get_filenames(directory)
-    filesok = check_files(filenames)
+    # User input
+    gui_input = gui.gui()
+    directory = gui_input["datadir"]
+    gantry_name = gui_input["gantry"]
+    outputdir = gui_input["outputdir"]
     
+        
+    filenames = get_filenames(directory)
+    filesok = check_files(filenames)   
     acq_date = get_acquisition_date( join(directory,filenames[0]) )
+    
+    # New directory for results
+    res_dir_name = gantry_name+" "+str(acq_date)
+    result_dir = make_results_directory(outputdir,res_dir_name)
+    print("Results will be printed to {}".format(result_dir))
+    
+    
 
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(directory, beams, gantry_name, acq_date)
+        full_analysis(directory, beams, gantry_name, acq_date, result_dir)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"
