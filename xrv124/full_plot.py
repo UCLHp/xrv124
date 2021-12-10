@@ -6,11 +6,9 @@ from matplotlib import cm
 import numpy as np
 import easygui
 
-import config
-
-
-GANTRY_ANGLES = config.GANTRY_ANGLES
-ENERGIES = config.ENERGIES
+#import config
+#gantry_angles = config.gantry_angles
+#energies = config.energies
 
 
 def select_file():
@@ -39,7 +37,7 @@ def trim_axs(axs, N):
 ############### SHIFTS #################
 
 
-def plot_shifts_by_gantry(results, imgname=None):
+def plot_shifts_by_gantry(gantry_angles, energies, results, imgname=None):
     """
     Plots showing shifts for each gantry angle
     """
@@ -47,13 +45,13 @@ def plot_shifts_by_gantry(results, imgname=None):
     cols=4
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(GANTRY_ANGLES) )
+    axs = trim_axs(axs, len(gantry_angles) )
 
-    for ga,ax in zip(GANTRY_ANGLES,axs):
+    for ga,ax in zip(gantry_angles,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(ENERGIES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(energies)))
 
-        for en,c in zip(ENERGIES,colors):    
+        for en,c in zip(energies,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(results[k][0], results[k][1], color=c, label=str(en) )
             ax.plot( [-1.5,1.5], [0,0], linestyle=":", alpha=0.01 )
@@ -76,7 +74,7 @@ def plot_shifts_by_gantry(results, imgname=None):
 
 
 
-def plot_shifts_by_energy(results, imgname=None):
+def plot_shifts_by_energy(gantry_angles, energies, results, imgname=None):
     """
     Plots showing shifts for each energy
     """
@@ -84,13 +82,13 @@ def plot_shifts_by_energy(results, imgname=None):
     cols=5
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(ENERGIES))
+    axs = trim_axs(axs, len(energies))
 
-    for en,ax in zip(ENERGIES,axs):
+    for en,ax in zip(energies,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(GANTRY_ANGLES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(gantry_angles)))
 
-        for ga,c in zip(GANTRY_ANGLES,colors):    
+        for ga,c in zip(gantry_angles,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(results[k][0], results[k][1], color=c, label=str(ga))
             ax.plot( [-1.5,1.5], [0,0], linestyle=":", alpha=0.01 )
@@ -113,7 +111,7 @@ def plot_shifts_by_energy(results, imgname=None):
 
 
 
-def plot_xyshifts_vs_gantry(results, imgname=None):
+def plot_xyshifts_vs_gantry(gantry_angles, energies, results, imgname=None):
     """
     Plots showing x,y shifts separately vs GA for each energy
     """
@@ -121,15 +119,15 @@ def plot_xyshifts_vs_gantry(results, imgname=None):
     cols=5
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(ENERGIES))
+    axs = trim_axs(axs, len(energies))
 
-    for en,ax in zip(ENERGIES,axs):
+    for en,ax in zip(energies,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(GANTRY_ANGLES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(gantry_angles)))
         xshifts=[]
         yshifts=[]
 
-        for ga,c in zip(GANTRY_ANGLES,colors):    
+        for ga,c in zip(gantry_angles,colors):    
             k="GA"+str(ga)+"E"+str(en)
             #ax.scatter(results[k][0]*PIXEL_SIZE, results[k][1]*PIXEL_SIZE, color=c, label=str(ga))
             xshifts.append( results[k][0] )
@@ -138,8 +136,8 @@ def plot_xyshifts_vs_gantry(results, imgname=None):
         ax.set_ylim(-2,2)
         #ax.set_xlabel("GA (degree)")
         #ax.set_ylabel("Shift (mm)")
-        ax.plot( GANTRY_ANGLES, xshifts, label="x shifts" )
-        ax.plot( GANTRY_ANGLES, yshifts, label="y shifts" )
+        ax.plot( gantry_angles, xshifts, label="x shifts" )
+        ax.plot( gantry_angles, yshifts, label="y shifts" )
         ax.set_title("E = {} MeV".format(str(en)))
         
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -155,7 +153,7 @@ def plot_xyshifts_vs_gantry(results, imgname=None):
 
 
 
-def plot_xyshifts_vs_energy(results, imgname=None):
+def plot_xyshifts_vs_energy(gantry_angles, energies, results, imgname=None):
     """
     Plots showing x,y shifts separately vs GA for each energy
     """
@@ -163,15 +161,15 @@ def plot_xyshifts_vs_energy(results, imgname=None):
     cols=4
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(GANTRY_ANGLES))
+    axs = trim_axs(axs, len(gantry_angles))
 
-    for ga,ax in zip(GANTRY_ANGLES,axs):
+    for ga,ax in zip(gantry_angles,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(ENERGIES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(energies)))
         xshifts=[]
         yshifts=[]
 
-        for en,c in zip(ENERGIES,colors):    
+        for en,c in zip(energies,colors):    
             k="GA"+str(ga)+"E"+str(en)
             #ax.scatter(results[k][0]*PIXEL_SIZE, results[k][1]*PIXEL_SIZE, color=c, label=str(ga))
             xshifts.append( results[k][0] )
@@ -180,8 +178,8 @@ def plot_xyshifts_vs_energy(results, imgname=None):
         ax.set_ylim(-2,2)
         #ax.set_xlabel("GA (degree)")
         #ax.set_ylabel("Shift (mm)")
-        ax.plot( ENERGIES, xshifts, label="x shifts" )
-        ax.plot( ENERGIES, yshifts, label="y shifts" )
+        ax.plot( energies, xshifts, label="x shifts" )
+        ax.plot( energies, yshifts, label="y shifts" )
         ax.set_title("GA = {}".format(str(ga)))
         
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -253,7 +251,7 @@ def shifts_3d_histogram(shifts_3d, imgname=None):
         
         
         
-def shifts_polar(shifts, imgname=None):
+def shifts_polar(gantry_angles, energies, shifts, imgname=None):
     """Polar plot of shifts from all spots
     
     Input: dictionary {"GA180E150":[xshift,yshift],...}
@@ -269,7 +267,7 @@ def shifts_polar(shifts, imgname=None):
         total_shift = (xy[0]**2 + xy[1]**2)**0.5
         displacements[key] = total_shift
     
-    colors = cm.rainbow(np.linspace(0, 1, len(ENERGIES)))
+    colors = cm.rainbow(np.linspace(0, 1, len(energies)))
     ga=[]
     en=[]
     d=[]
@@ -279,7 +277,7 @@ def shifts_polar(shifts, imgname=None):
         ga.append( radians(angle) )
         energy = int(key.split("E")[1])
         en.append(energy)
-        cols.append( colors[ENERGIES.index(energy)] )        
+        cols.append( colors[energies.index(energy)] )        
         d.append(displacements[key])    
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})   
@@ -310,7 +308,7 @@ def shifts_polar(shifts, imgname=None):
 
 ################ SPOT SIZES ######################
 
-def plot_spot_diameters_by_gantry(results, imgname=None):
+def plot_spot_diameters_by_gantry(gantry_angles, energies, results, imgname=None):
     """
     Plots showing spot size vs energy at each gantry angle
     """
@@ -318,13 +316,13 @@ def plot_spot_diameters_by_gantry(results, imgname=None):
     cols=4
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(GANTRY_ANGLES) )
+    axs = trim_axs(axs, len(gantry_angles) )
 
-    for ga,ax in zip(GANTRY_ANGLES,axs):
+    for ga,ax in zip(gantry_angles,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(ENERGIES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(energies)))
 
-        for en,c in zip(ENERGIES,colors):    
+        for en,c in zip(energies,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(en, results[k], color=c, label=str(en) )
         ax.set_ylim(4,15) # tune this to better see the oscilatory nature
@@ -342,7 +340,7 @@ def plot_spot_diameters_by_gantry(results, imgname=None):
         plt.show()
 
 
-def plot_spot_diameters_by_energy(results, imgname=None):
+def plot_spot_diameters_by_energy(gantry_angles, energies, results, imgname=None):
     """
     Plots showing spot diameters vs GA at each beam energy
     """
@@ -350,13 +348,13 @@ def plot_spot_diameters_by_energy(results, imgname=None):
     cols=5
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(ENERGIES) )
+    axs = trim_axs(axs, len(energies) )
 
-    for en,ax in zip(ENERGIES,axs):
+    for en,ax in zip(energies,axs):
 
-        colors = cm.rainbow(np.linspace(0, 1, len(GANTRY_ANGLES)))
+        colors = cm.rainbow(np.linspace(0, 1, len(gantry_angles)))
 
-        for ga,c in zip(GANTRY_ANGLES,colors):    
+        for ga,c in zip(gantry_angles,colors):    
             k="GA"+str(ga)+"E"+str(en)
             ax.scatter(ga, results[k], color=c, label=str(ga) )
         ax.set_xlim(-200,200)
@@ -379,17 +377,17 @@ def plot_spot_diameters_by_energy(results, imgname=None):
 
 ############### SPOT SIGMAS X,Y #####################
 
-def plot_spot_sigmas(results, imgname=None, arc_radial=False):
+def plot_spot_sigmas(gantry_angles, energies, results, imgname=None, arc_radial=False):
     """Plot spot sigmas (x and y) for either SPOT or IMAGE xcoord systems
     """
     rows=4
     cols=5
 
     fig,axs = plt.subplots(rows,cols, figsize=(15,12), constrained_layout=True)
-    axs = trim_axs(axs, len(ENERGIES) )
+    axs = trim_axs(axs, len(energies) )
 
-    for en,ax in zip(ENERGIES,axs):  
-        for ga in GANTRY_ANGLES:    
+    for en,ax in zip(energies,axs):  
+        for ga in gantry_angles:    
             k="GA"+str(ga)+"E"+str(en)
             xlabel="x_sigma"
             ylabel="y_sigma"

@@ -8,19 +8,19 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-import config
 
-GANTRY_ANGLES = config.GANTRY_ANGLES
-ENERGIES = config.ENERGIES
+#import config
+#GANTRY_ANGLES = config.GANTRY_ANGLES
+#ENERGIES = config.ENERGIES
 
 
 
 ''' ## Temporary tolerances to be used
 
 Action/Suspension limits:
-Action limit: 		>1.0mm for at least 50% of energies for any given gantry angle;
-			>1.5mm for at least 5 energies at any gantry angle;
-			>2.0mm for any energy at any gantry angle.
+Action limit: >1.0mm for at least 50% of energies for any given gantry angle;
+			  >1.5mm for at least 5 energies at any gantry angle;
+			  >2.0mm for any energy at any gantry angle.
 Suspension limit:	>2.5mm for any energy at any gantry angle.
 '''
 
@@ -47,7 +47,7 @@ def get_total_displacement( shifts ):
     return displacements
 
 
-def get_table_data(displacements):
+def get_table_data(gantry_angles, energies, displacements):
     """Method taking dicitonary of beam (GAxEy) and total displacement
     and formatting it for ReportLab PDF table"""
     
@@ -57,7 +57,7 @@ def get_table_data(displacements):
     line_1 = ['Gantry', '50% energies < 1mm', 'Less than 5 energies > 1.5mm', 'No energy > 2mm']
     data.append(line_1)
 
-    for ga in GANTRY_ANGLES:
+    for ga in gantry_angles:
         # Store beams that were out of certain tolerances
         gt_1 = []
         gt_1p5 = []
@@ -68,7 +68,7 @@ def get_table_data(displacements):
         data_line = ["NONE_ERROR"]*4   
         data_line[0] = str(ga)
 
-        for en in ENERGIES:
+        for en in energies:
             k="GA"+str(ga)+"E"+str(en)
 
             if displacements[k] > 2.5:
@@ -96,7 +96,7 @@ def get_table_data(displacements):
             data_line[2] = "FAIL"
         else:
             data_line[2] = "pass"
-        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(ENERGIES)/2.0:
+        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(energies)/2.0:
             #print("WARNING: 1.0mm Action Limit exceeded for GA={}\n".format(ga))
             #print( gt_1 + gt_1p5 + gt_2 + gt_2p5 )
             data_line[1]  = "FAIL"
@@ -110,7 +110,7 @@ def get_table_data(displacements):
 
 
 
-def summary_reportlab( shifts, acq_date, gantry_num, images=None, output=None ):
+def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_num, images=None, output=None ):
     """Print a pdf report of the beam shift results
 
     'shifts' input is a dictionary in form { "GA0E240":[xshift, yshift] }
@@ -136,10 +136,10 @@ def summary_reportlab( shifts, acq_date, gantry_num, images=None, output=None ):
         
 
     # Convert x,y shifts to total displacement
-    displacements = get_total_displacement( shifts )
+    displacements = get_total_displacement(shifts )
 
     # Data formatted for PDF table
-    table_data = get_table_data(displacements)
+    table_data = get_table_data(gantry_angles, energies,displacements)
 
 
     # Set up document

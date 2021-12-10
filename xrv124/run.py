@@ -15,14 +15,14 @@ import gui
 
 
 #######################################
-GANTRY_ANGLES = config.GANTRY_ANGLES
-ENERGIES = config.ENERGIES
+#GANTRY_ANGLES = ""#config.GANTRY_ANGLES
+#ENERGIES = ""#config.ENERGIES
 
 TARGET = config.TARGET
 
-print("\n")
-print("GANTRY_ANGLES={}".format(GANTRY_ANGLES))
-print("ENERGIES={}".format(ENERGIES)) 
+#print("\n")
+#print("GANTRY_ANGLES={}".format(GANTRY_ANGLES))
+#print("ENERGIES={}".format(ENERGIES)) 
 #######################################
 
 
@@ -45,7 +45,7 @@ def get_filenames(directory):
 
 
 
-def check_files(filenames):
+def check_files(filenames,gantry_angles, energies):
     """Return true if all expected files present
 
     e.g. energies*GAs*3 files each (csv,txt,bmp)
@@ -62,7 +62,7 @@ def check_files(filenames):
     uniqnames = list( set(dignames) )
     print("uniquenames={}".format(len(uniqnames)) )
     
-    if( len(dignames)==len(GANTRY_ANGLES)*len(ENERGIES)*3 and 
+    if( len(dignames)==len(gantry_angles)*len(energies)*3 and 
             len(uniqnames)==len(dignames)//3 ):
         return True
     else:
@@ -100,14 +100,14 @@ def make_results_directory(basedir,attempted_name):
     return join(basedir,result_dir)           
                 
 
-def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
+def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, outputdir):
     """Analsysis of full data set"""
      
     result_dir=outputdir
       
     print("Analyzing BEV spot shifts...")
     results_shifts = {}
-    results_shifts = xan.analyse_shifts(directory, beams)
+    results_shifts = xan.analyse_shifts(gas, ens, directory, beams)
     ############## IMAGE TO BEV CONVERSION ########################
     # The analyse_shifts method works in image coordinate system.
     # IMG-Y = -BEV-Y hence if we want results in BEV coords:
@@ -118,17 +118,17 @@ def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
     with open(join(result_dir,"results_shifts.txt"),"w") as json_file:
         json.dump(results_shifts, json_file)    
     # 2D plot of shifts (x,y) grouped by GA
-    xplot.plot_shifts_by_gantry(results_shifts, imgname=join(result_dir,"shifts_by_gantry.png"))
+    xplot.plot_shifts_by_gantry(gas, ens,results_shifts, imgname=join(result_dir,"shifts_by_gantry.png"))
     # 2D plot of shifts (x,y) grouped by ENERGY
-    xplot.plot_shifts_by_energy(results_shifts, imgname=join(result_dir,"shifts_by_energy.png"))
+    xplot.plot_shifts_by_energy(gas, ens,results_shifts, imgname=join(result_dir,"shifts_by_energy.png"))
     # x & y shifts plotted separately vs GA (for each E)
-    xplot.plot_xyshifts_vs_gantry(results_shifts, imgname=join(result_dir,"xy_shifts_vs_gantry.png"))
+    xplot.plot_xyshifts_vs_gantry(gas, ens,results_shifts, imgname=join(result_dir,"xy_shifts_vs_gantry.png"))
     # x & y shifts plotted separately vs E (for each GA)
-    xplot.plot_xyshifts_vs_energy(results_shifts, imgname=join(result_dir,"xy_shifts_vs_energy.png"))
+    xplot.plot_xyshifts_vs_energy(gas, ens,results_shifts, imgname=join(result_dir,"xy_shifts_vs_energy.png"))
     # Histogram of shifts
     xplot.shifts_histogram(results_shifts, imgname=join(result_dir,"shifts_histo.png"))
     # Polar plot of shifts
-    xplot.shifts_polar(results_shifts, imgname=join(result_dir,"shifts_polar.png"))    
+    xplot.shifts_polar(gas, ens,results_shifts, imgname=join(result_dir,"shifts_polar.png"))    
 
 
     """
@@ -143,33 +143,33 @@ def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
     results_spot_diameters = {}
     results_sigmas = {}
     print("Reading spot diameters...")
-    results_spot_diameters = xan.read_spot_diameters(directory, beams)
+    results_spot_diameters = xan.read_spot_diameters(gas, ens, directory, beams)
     with open(join(result_dir,"results_spot_diameters.txt"),"w") as json_file:
         json.dump(results_spot_diameters, json_file)    
     ## Spot diameter plots
-    xplot.plot_spot_diameters_by_gantry(results_spot_diameters, imgname=join(result_dir,"diameter_by_gantry.png"))
-    xplot.plot_spot_diameters_by_energy(results_spot_diameters, imgname=join(result_dir,"diameter_by_energy.png"))        
+    xplot.plot_spot_diameters_by_gantry(gas, ens, results_spot_diameters, imgname=join(result_dir,"diameter_by_gantry.png"))
+    xplot.plot_spot_diameters_by_energy(gas, ens, results_spot_diameters, imgname=join(result_dir,"diameter_by_energy.png"))        
         
     
     print("Analzying spot sigmas...")
-    results_sigmas = xan.analyse_spot_profiles(directory, beams)
+    results_sigmas = xan.analyse_spot_profiles(gas, ens,directory, beams)
     with open(join(result_dir,"results_spot_sigmas.txt"),"w") as json_file:
         json.dump(results_sigmas, json_file)    
     ## Spot sigma (method can do either "image" or "spot" coordinate systems
-    xplot.plot_spot_sigmas(results_sigmas, imgname=join(result_dir,"sigmas_xy.png"))        
+    xplot.plot_spot_sigmas(gas, ens, results_sigmas, imgname=join(result_dir,"sigmas_xy.png"))        
         
     
     print("Reading arc and radial entry spot widths...")
-    results_arc_radial = xan.read_arc_radial_widths(directory, beams)
+    results_arc_radial = xan.read_arc_radial_widths(gas, ens,directory, beams)
     with open(join(result_dir,"results_arc_radial.txt"),"w") as json_file:
         json.dump(results_arc_radial, json_file)
     ## Arc and radial widths from entry spot
-    xplot.plot_spot_sigmas(results_arc_radial, imgname=join(result_dir,"arc_radial.png"),
+    xplot.plot_spot_sigmas(gas, ens, results_arc_radial, imgname=join(result_dir,"arc_radial.png"),
                                arc_radial=True)
     
 
     print("Generating summary PDF report...")
-    xreport.summary_reportlab(results_shifts, acq_date, gantry_num,
+    xreport.summary_reportlab(gas,ens,results_shifts, acq_date, gantry_num,
                 images=[join(result_dir,"shifts_by_gantry.png"),
                         join(result_dir,"shifts_by_energy.png"),
                         join(result_dir,"shifts_histo.png"),
@@ -185,7 +185,7 @@ def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
     # need newline to avoid blank lines
     with open(db_results,'w', encoding='UTF8',newline='') as f:
         writer = csv.writer(f)
-        header = ["Date","Gantry","GA","E","x-offset","y-offset","Diameter"]
+        header = ["ADate","Operator 1","Operator 2","MachineName","GA","E","x-offset","y-offset","Diameter"]
         writer.writerow(header)
         for key in results_shifts:
             ga = key.split("GA")[1].split("E")[0]
@@ -193,7 +193,7 @@ def full_analysis(directory, beams, gantry_num, acq_date, outputdir):
             xoff,yoff = results_shifts[key]
             diam = results_spot_diameters[key]
             
-            data = [acq_date,gantry_num,ga,e,xoff,yoff,diam]
+            data = [acq_date,op1,op2,gantry_num,ga,e,xoff,yoff,diam]
             writer.writerow(data)
 
 
@@ -203,13 +203,22 @@ def main():
 
     # User input
     gui_input = gui.gui()
+    
     directory = gui_input["datadir"]
     gantry_name = gui_input["gantry"]
     outputdir = gui_input["outputdir"]
+    operator1 = gui_input["op1"]
+    operator2 = gui_input["op2"]
+    gantry_angles_in = gui_input["angles"]
+    energies_in = gui_input["energies"]
     
+    #Override angles and energies if provided
+    gantry_angles = [ int(ga) for ga in gantry_angles_in.split(",")  ]
+    energies = [ int(e) for e in energies_in.split(",")  ]
+        
         
     filenames = get_filenames(directory)
-    filesok = check_files(filenames)   
+    filesok = check_files(filenames, gantry_angles, energies)   
     acq_date = get_acquisition_date( join(directory,filenames[0]) )
     
     # New directory for results
@@ -222,7 +231,7 @@ def main():
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(directory, beams, gantry_name, acq_date, result_dir)
+        full_analysis(gantry_angles, energies,operator1, operator2, directory,beams, gantry_name, acq_date, result_dir)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"
