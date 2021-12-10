@@ -18,6 +18,10 @@ ENERGIES = config.ENERGIES
 default_gas = re.sub('[\[\] ]','',str(GANTRY_ANGLES) )
 default_es = re.sub('[\[\] ]','',str(ENERGIES))
 
+ga_option_2 = "165,135,105,75,45,15,-15,-45,-75,-105,-135,-165"
+ga_option_3 = "180,90,0,-90"
+ga_options = [default_gas, ga_option_2,ga_option_3]
+
 
 
 def gui():
@@ -43,10 +47,12 @@ def gui():
         [sg.Text('', size=(65,1))],
         [sg.Text('Define order of gantry angles and energies acquired', size=(50,1))],      
         [sg.Text('Separate entries with a comma', size=(50,2))],
-        [sg.Text('Gantry angles', size=(12, 1)), sg.In(default_gas, key="angles", size=(50,1)) ],
-        [sg.Text('Energies (MeV)', size=(12, 1)), sg.In(default_es, key="energies", size=(50,1)) ]           
+        [sg.Text('Gantry angles', size=(12, 1)), sg.Combo(ga_options, key="angles", default_value=ga_options[0], size=(50,1)) ],
+        [sg.Text('Energies (MeV)', size=(12, 1)), sg.In(default_es, key="energies", size=(50,1)) ]
+        [sg.Text('', size=(15, 1)) ],
+        [sg.Text('',size=(20,1)),sg.Submit(), sg.Cancel()]           
     ]
-    
+    ##[sg.Text('Gantry angles', size=(12, 1)), sg.In(default_gas, key="angles", size=(50,1)) ],
     
     layout = [[sg.TabGroup( [
                  [sg.Tab(' Data ', tab1_layout, tooltip='Essential info'), 

@@ -37,6 +37,16 @@ def get_acquisition_date(file):
     return str(date)
 
 
+def get_acquisition_time(file):
+    """Return time of data acquisition from data file timestamp
+    
+    This only works on Windows OS
+    """
+    tt = getctime(file)
+    time = datetime.datetime.fromtimestamp(tt).time()
+    return str(time)
+
+
 def get_filenames(directory):
     """Returns list of files in directory
     """
@@ -100,7 +110,7 @@ def make_results_directory(basedir,attempted_name):
     return join(basedir,result_dir)           
                 
 
-def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, outputdir):
+def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, acq_time, outputdir):
     """Analsysis of full data set"""
      
     result_dir=outputdir
@@ -185,7 +195,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, ou
     # need newline to avoid blank lines
     with open(db_results,'w', encoding='UTF8',newline='') as f:
         writer = csv.writer(f)
-        header = ["ADate","Operator 1","Operator 2","MachineName","GA","E","x-offset","y-offset","Diameter"]
+        header = ["ADate","ATime","Operator 1","Operator 2","MachineName","GA","E","x-offset","y-offset","Diameter"]
         writer.writerow(header)
         for key in results_shifts:
             ga = key.split("GA")[1].split("E")[0]
@@ -193,7 +203,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, ou
             xoff,yoff = results_shifts[key]
             diam = results_spot_diameters[key]
             
-            data = [acq_date,op1,op2,gantry_num,ga,e,xoff,yoff,diam]
+            data = [acq_date,acq_time,op1,op2,gantry_num,ga,e,xoff,yoff,diam]
             writer.writerow(data)
 
 
@@ -215,11 +225,13 @@ def main():
     #Override angles and energies if provided
     gantry_angles = [ int(ga) for ga in gantry_angles_in.split(",")  ]
     energies = [ int(e) for e in energies_in.split(",")  ]
-        
-        
+
     filenames = get_filenames(directory)
-    filesok = check_files(filenames, gantry_angles, energies)   
+    filesok = check_files(filenames, gantry_angles, energies) 
+    
+    # Get acquisition date and time fromfirst file in directory
     acq_date = get_acquisition_date( join(directory,filenames[0]) )
+    acq_time = get_acquisition_time( join(directory,filenames[0]) )
     
     # New directory for results
     res_dir_name = gantry_name+" "+str(acq_date)
@@ -231,7 +243,7 @@ def main():
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(gantry_angles, energies,operator1, operator2, directory,beams, gantry_name, acq_date, result_dir)
+        full_analysis(gantry_angles, energies,operator1, operator2, directory,beams, gantry_name, acq_date, acq_time, result_dir)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"
