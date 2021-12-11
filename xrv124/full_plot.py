@@ -6,9 +6,6 @@ from matplotlib import cm
 import numpy as np
 import easygui
 
-#import config
-#gantry_angles = config.gantry_angles
-#energies = config.energies
 
 
 def select_file():

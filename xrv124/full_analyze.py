@@ -10,14 +10,11 @@ from lmfit import Parameters
 import config
 
 
-#gantry_angles = config.gantry_angles
-#energies = config.energies
 
 # % threshold for finding centre of BB shadow in entry-exit image
 THRESHOLD = config.THRESHOLD   
 # % threshold for finding centroid of spots
 THRESH_CENTROID = config.THRESH_CENTROID
-
 
 
 

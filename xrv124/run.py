@@ -4,8 +4,6 @@ import json
 import csv
 import datetime
 
-#import easygui
-
 import full_analyze as xan
 import full_plot as xplot
 import full_report as xreport
@@ -14,17 +12,8 @@ import config
 import gui
 
 
-#######################################
-#GANTRY_ANGLES = ""#config.GANTRY_ANGLES
-#ENERGIES = ""#config.ENERGIES
 
 TARGET = config.TARGET
-
-#print("\n")
-#print("GANTRY_ANGLES={}".format(GANTRY_ANGLES))
-#print("ENERGIES={}".format(ENERGIES)) 
-#######################################
-
 
 
 def get_acquisition_date(file):
@@ -44,7 +33,7 @@ def get_acquisition_time(file):
     """
     tt = getctime(file)
     time = datetime.datetime.fromtimestamp(tt).time()
-    return str(time)
+    return str(time)[:8]
 
 
 def get_filenames(directory):
@@ -110,7 +99,7 @@ def make_results_directory(basedir,attempted_name):
     return join(basedir,result_dir)           
                 
 
-def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, acq_time, outputdir):
+def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, acq_time, outputdir):
     """Analsysis of full data set"""
      
     result_dir=outputdir
@@ -179,7 +168,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, ac
     
 
     print("Generating summary PDF report...")
-    xreport.summary_reportlab(gas,ens,results_shifts, acq_date, gantry_num,
+    xreport.summary_reportlab(gas,ens,results_shifts, acq_date, gantry_name,
                 images=[join(result_dir,"shifts_by_gantry.png"),
                         join(result_dir,"shifts_by_energy.png"),
                         join(result_dir,"shifts_histo.png"),
@@ -203,7 +192,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, ac
             xoff,yoff = results_shifts[key]
             diam = results_spot_diameters[key]
             
-            data = [acq_date,acq_time,op1,op2,gantry_num,ga,e,xoff,yoff,diam]
+            data = [acq_date,acq_time,op1,op2,gantry_name,ga,e,xoff,yoff,diam]
             writer.writerow(data)
 
 
@@ -211,9 +200,8 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_num, acq_date, ac
 
 def main():
 
-    # User input
-    gui_input = gui.gui()
-    
+    # User GUI input
+    gui_input = gui.gui()  
     directory = gui_input["datadir"]
     gantry_name = gui_input["gantry"]
     outputdir = gui_input["outputdir"]
@@ -221,10 +209,14 @@ def main():
     operator2 = gui_input["op2"]
     gantry_angles_in = gui_input["angles"]
     energies_in = gui_input["energies"]
+
+    # Make energies and GA lists from input; ensure -180 < ga < 180
+    energies = [ int(e) for e in energies_in.split(",")  ]    
+    gas = [ int(ga) for ga in gantry_angles_in.split(",")  ]
+    gantry_angles = [ ga-360 if ga>180 else ga for ga in gas]
     
-    #Override angles and energies if provided
-    gantry_angles = [ int(ga) for ga in gantry_angles_in.split(",")  ]
-    energies = [ int(e) for e in energies_in.split(",")  ]
+    print(f"GAs: {gantry_angles}")
+    print(f"Es: {energies}")
 
     filenames = get_filenames(directory)
     filesok = check_files(filenames, gantry_angles, energies) 

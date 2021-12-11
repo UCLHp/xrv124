@@ -8,20 +8,11 @@ GUI to select data directory, output destination and Gantry
 
 import PySimpleGUI as sg
 import config
-import re
 
 
 GANTRY_NAMES = config.GANTRY_NAMES
-GANTRY_ANGLES = config.GANTRY_ANGLES
+GANTRY_ANGLE_OPTIONS = config.GANTRY_ANGLE_OPTIONS
 ENERGIES = config.ENERGIES
-
-default_gas = re.sub('[\[\] ]','',str(GANTRY_ANGLES) )
-default_es = re.sub('[\[\] ]','',str(ENERGIES))
-
-ga_option_2 = "165,135,105,75,45,15,-15,-45,-75,-105,-135,-165"
-ga_option_3 = "180,90,0,-90"
-ga_options = [default_gas, ga_option_2,ga_option_3]
-
 
 
 def gui():
@@ -39,24 +30,26 @@ def gui():
         [sg.Text('Operator 1', size=(10, 1)), sg.In(key="op1", size=(5,1)) , sg.Text('      Operator 2', size=(12, 1)), sg.In(key="op2",size=(5,1))],
         [sg.Text('Save location', size=(10, 1)), sg.In(key="outputdir"), sg.FolderBrowse()],
         [sg.Text('', size=(15, 1)) ],
-        [sg.Text('',size=(20,1)),sg.Submit(), sg.Cancel()]
+        [sg.Text('',size=(20,1)),sg.Submit(), sg.Cancel()],
+        [sg.Text('', size=(15, 1)) ],
     ]
     
     
     tab2_layout = [
         [sg.Text('', size=(65,1))],
         [sg.Text('Define order of gantry angles and energies acquired', size=(50,1))],      
-        [sg.Text('Separate entries with a comma', size=(50,2))],
-        [sg.Text('Gantry angles', size=(12, 1)), sg.Combo(ga_options, key="angles", default_value=ga_options[0], size=(50,1)) ],
-        [sg.Text('Energies (MeV)', size=(12, 1)), sg.In(default_es, key="energies", size=(50,1)) ]
-        [sg.Text('', size=(15, 1)) ],
+        [sg.Text('Separate entries with a comma; integers only', size=(50,2))],
+        [sg.Text('Gantry angles', size=(12, 1)), 
+           sg.Combo(GANTRY_ANGLE_OPTIONS, key="angles", default_value=GANTRY_ANGLE_OPTIONS[0], size=(50,1)) ],
+        [sg.Text('Energies (MeV)', size=(12, 1)), sg.In(ENERGIES, key="energies", size=(50,1)) ],
+        [sg.Text('', size=(15, 2)) ],
         [sg.Text('',size=(20,1)),sg.Submit(), sg.Cancel()]           
     ]
-    ##[sg.Text('Gantry angles', size=(12, 1)), sg.In(default_gas, key="angles", size=(50,1)) ],
+
     
     layout = [[sg.TabGroup( [
-                 [sg.Tab(' Data ', tab1_layout, tooltip='Essential info'), 
-                  sg.Tab('GAs and energies', tab2_layout, tooltip='Optional') ]  ])
+                 [sg.Tab(' Data ', tab1_layout), 
+                  sg.Tab('GAs and energies', tab2_layout, tooltip='Beam data') ]  ])
              ]]
    
 

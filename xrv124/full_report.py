@@ -9,12 +9,6 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 
-#import config
-#GANTRY_ANGLES = config.GANTRY_ANGLES
-#ENERGIES = config.ENERGIES
-
-
-
 ''' ## Temporary tolerances to be used
 
 Action/Suspension limits:
@@ -23,8 +17,6 @@ Action limit: >1.0mm for at least 50% of energies for any given gantry angle;
 			  >2.0mm for any energy at any gantry angle.
 Suspension limit:	>2.5mm for any energy at any gantry angle.
 '''
-
-
 
 # PyFPDF: https://www.blog.pythonlibrary.org/2018/06/05/creating-pdfs-with-pyfpdf-and-python/
 # Interactive PDFs with ReportLab: https://www.blog.pythonlibrary.org/2018/05/29/creating-interactive-pdf-forms-in-reportlab-with-python/
@@ -110,7 +102,7 @@ def get_table_data(gantry_angles, energies, displacements):
 
 
 
-def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_num, images=None, output=None ):
+def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_name, images=None, output=None ):
     """Print a pdf report of the beam shift results
 
     'shifts' input is a dictionary in form { "GA0E240":[xshift, yshift] }
@@ -159,7 +151,7 @@ def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_num, imag
     title = '<font size="14"><u> Logos XRV-124 monthly QA results</u></font>'
     Story.append(Paragraph(title, styles["Justify"]))
     Story.append(Spacer(1, 10))
-    gantryline = '<font size="10">Gantry {}</font>'.format(gantry_num)
+    gantryline = '<font size="10">{}</font>'.format(gantry_name)
     Story.append(Paragraph(gantryline, styles["Indent"]))
     dateline_1 = '<font size="10">Acquisition date: {}</font>'.format(acq_date)
     Story.append(Paragraph(dateline_1, styles["Indent"]))
