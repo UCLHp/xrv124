@@ -102,7 +102,7 @@ def get_table_data(gantry_angles, energies, displacements):
 
 
 
-def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_name, images=None, output=None ):
+def summary_reportlab(gantry_angles,energies,op1,op2,shifts, acq_datetime, gantry_name, images=None, output=None ):
     """Print a pdf report of the beam shift results
 
     'shifts' input is a dictionary in form { "GA0E240":[xshift, yshift] }
@@ -131,7 +131,7 @@ def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_name, ima
     displacements = get_total_displacement(shifts )
 
     # Data formatted for PDF table
-    table_data = get_table_data(gantry_angles, energies,displacements)
+    table_data = get_table_data(gantry_angles,energies,displacements)
 
 
     # Set up document
@@ -153,10 +153,12 @@ def summary_reportlab(gantry_angles, energies,shifts, acq_date, gantry_name, ima
     Story.append(Spacer(1, 10))
     gantryline = '<font size="10">{}</font>'.format(gantry_name)
     Story.append(Paragraph(gantryline, styles["Indent"]))
-    dateline_1 = '<font size="10">Acquisition date: {}</font>'.format(acq_date)
+    dateline_1 = '<font size="10">Acquisition date: {}</font>'.format(acq_datetime)
     Story.append(Paragraph(dateline_1, styles["Indent"]))
     dateline_2 = '<font size="10">Analysis date: {}</font>'.format(curr_date)
     Story.append(Paragraph(dateline_2, styles["Indent"]))
+    operatorline = '<font size="10">Operators: {}, {}</font>'.format(op1,op2)
+    Story.append(Paragraph(operatorline, styles["Indent"]))
     Story.append(Spacer(1, 50))
 
 

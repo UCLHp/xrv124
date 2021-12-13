@@ -101,6 +101,8 @@ def make_results_directory(basedir,attempted_name):
 
 def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, acq_time, outputdir):
     """Analsysis of full data set"""
+    
+    acq_datetime = acq_date+" "+acq_time
      
     result_dir=outputdir
       
@@ -168,11 +170,12 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, a
     
 
     print("Generating summary PDF report...")
-    xreport.summary_reportlab(gas,ens,results_shifts, acq_date, gantry_name,
+    xreport.summary_reportlab(gas,ens,op1,op2,results_shifts, acq_datetime, gantry_name,
                 images=[join(result_dir,"shifts_by_gantry.png"),
                         join(result_dir,"shifts_by_energy.png"),
                         join(result_dir,"shifts_histo.png"),
-                        join(result_dir,"shifts_polar.png")                         
+                        join(result_dir,"shifts_polar.png"),
+                        join(result_dir,"diameter_by_energy.png")                         
                        ],
                 output=join(result_dir,"Summary report.pdf")
                 )
@@ -184,7 +187,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, a
     # need newline to avoid blank lines
     with open(db_results,'w', encoding='UTF8',newline='') as f:
         writer = csv.writer(f)
-        header = ["ADate","ATime","Operator 1","Operator 2","MachineName","GA","E","x-offset","y-offset","Diameter"]
+        header = ["ADate","Operator 1","Operator 2","MachineName","GA","Energy","x-offset","y-offset","Diameter"]
         writer.writerow(header)
         for key in results_shifts:
             ga = key.split("GA")[1].split("E")[0]
@@ -192,7 +195,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, a
             xoff,yoff = results_shifts[key]
             diam = results_spot_diameters[key]
             
-            data = [acq_date,acq_time,op1,op2,gantry_name,ga,e,xoff,yoff,diam]
+            data = [acq_datetime,op1,op2,gantry_name,ga,e,xoff,yoff,diam]
             writer.writerow(data)
 
 
