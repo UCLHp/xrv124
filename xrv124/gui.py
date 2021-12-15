@@ -21,17 +21,20 @@ def gui():
     Keys for returned dict: datadir, gantry, operator 1, operator 2, outputdir
     as well as optional gantry angle and energy lists from second tab
     """
+    
+    off = 14
 
     sg.theme('BlueMono')        
     tab1_layout = [
         [sg.Text('Choose data folder, gantry and save location', size=(45,2))],
-        [sg.Text('Data folder', size=(10, 1)), sg.In(key="datadir"), sg.FolderBrowse()],
-        [sg.Text('Gantry', size=(10, 1)), sg.Combo(GANTRY_NAMES, size=(14,4),key="gantry")],
-        [sg.Text('Operator 1', size=(10, 1)), sg.In(key="op1", size=(5,1)) , sg.Text('      Operator 2', size=(12, 1)), sg.In(key="op2",size=(5,1))],
-        [sg.Text('Save location', size=(10, 1)), sg.In(key="outputdir"), sg.FolderBrowse()],
-        [sg.Text('', size=(15, 1)) ],
-        [sg.Text('',size=(20,1)),sg.Submit(), sg.Cancel()],
-        [sg.Text('', size=(15, 1)) ],
+        [sg.Text('Data folder', size=(off, 1)), sg.In(key="datadir"), sg.FolderBrowse()],
+        [sg.Text('Gantry', size=(off, 1)), sg.Combo(GANTRY_NAMES, size=(14,4),key="gantry")],
+        [sg.Text('Operator 1', size=(off, 1)), sg.In(key="op1", size=(5,1)) , sg.Text('      Operator 2', size=(12, 1)), sg.In(key="op2",size=(5,1))],
+        [sg.Text('Save location', size=(off, 1)), sg.In(key="outputdir"), sg.FolderBrowse()],
+        [sg.Text('', size=(off, 1)) ],
+        [sg.Text('',size=(25,1)),sg.Submit(), sg.Cancel()],
+        [sg.Text('Optional comment', size=(off, 1)), sg.In(key="comment")],
+        [sg.Text('', size=(off, 1)) ]
     ]
     
     
@@ -70,5 +73,6 @@ if __name__=="__main__":
     print( vals["op2"])
     print( vals["energies"] )
     print( vals["angles"] )
+    print( vals["comment"] )
     #print( vals["op2"]=="" )
     #print( values )

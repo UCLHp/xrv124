@@ -4,12 +4,15 @@ import json
 import csv
 import datetime
 
+import pandas as pd
+
 import full_analyze as xan
 import full_plot as xplot
 import full_report as xreport
 import partial_analyze
 import config
 import gui
+import database as db
 
 
 
@@ -99,7 +102,8 @@ def make_results_directory(basedir,attempted_name):
     return join(basedir,result_dir)           
                 
 
-def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, acq_time, outputdir):
+def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date,
+                  acq_time, comment, outputdir):
     """Analsysis of full data set"""
     
     acq_datetime = acq_date+" "+acq_time
@@ -197,6 +201,12 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date, a
             
             data = [acq_datetime,op1,op2,gantry_name,ga,e,xoff,yoff,diam]
             writer.writerow(data)
+            
+            
+            
+    print("Attempting to write to database...")
+    df = pd.read_csv(db_results)
+    db.write_to_db(df,comment)
 
 
 
@@ -212,6 +222,7 @@ def main():
     operator2 = gui_input["op2"]
     gantry_angles_in = gui_input["angles"]
     energies_in = gui_input["energies"]
+    comment = gui_input["comment"]
 
     # Make energies and GA lists from input; ensure -180 < ga < 180
     energies = [ int(e) for e in energies_in.split(",")  ]    
@@ -238,7 +249,9 @@ def main():
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
-        full_analysis(gantry_angles, energies,operator1, operator2, directory,beams, gantry_name, acq_date, acq_time, result_dir)
+        full_analysis(gantry_angles, energies, operator1, operator2, 
+                      directory, beams, gantry_name, acq_date, acq_time,
+                      comment, result_dir)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"
          "- Did you choose correct directory?\n"
