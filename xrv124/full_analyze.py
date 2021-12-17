@@ -18,7 +18,6 @@ THRESH_CENTROID = config.THRESH_CENTROID
 
 
 
-
 def progress_bar(value, endvalue, bar_length=50):
     """Displays percentage of beams processed"""
 
@@ -120,7 +119,7 @@ def get_centroid_of_largest_region( img, threshold, ga=None, en=None ):
 
 
 
-def analyse_shifts(directory, beams, GANTRY, ENERGY):
+def analyse_shifts(gantry_angles, energies, directory, beams):
     """Analyse spot shifts in x,y of IMAGE COORDINATES
 
     Q: define shift from centre of image or centre of spot???
@@ -135,8 +134,8 @@ def analyse_shifts(directory, beams, GANTRY, ENERGY):
     spot_img_centre_shifts = []
     centre_shifts = []
     
-    for ga in GANTRY:
-        for en in ENERGY:
+    for ga in gantry_angles:
+        for en in energies:
             cnt+=1
             
             progress_bar(cnt, len(beams) )
@@ -256,14 +255,14 @@ def total_shift_3d(p1, p2, target):
 
 
 
-def shift_vector_logos_coords(directory, beams, GANTRY, ENERGY, target):
+def shift_vector_logos_coords(gantry_angles, energies, directory, beams, target):
     """Calculate 3D shift vector, in Logos coord system, from the isocentre
     to the closest point on beam vector"""
     
     shifts_3d = {}
     cnt=-1
-    for ga in GANTRY:
-        for en in ENERGY:
+    for ga in gantry_angles:
+        for en in energies:
             cnt+=1
             
             progress_bar(cnt, len(beams) )
@@ -312,7 +311,7 @@ def shift_vector_logos_coords(directory, beams, GANTRY, ENERGY, target):
 
 
 
-def read_spot_diameters(directory, beams, GANTRY, ENERGY):
+def read_spot_diameters(gantry_angles, energies, directory, beams):
     """Retrieve entry spot "diameter" from csv file
     FUNCTION WILL NOT WORK IF THERE IS MISSING DATA
     """
@@ -321,8 +320,8 @@ def read_spot_diameters(directory, beams, GANTRY, ENERGY):
     
     results = {}
     cnt = -1
-    for ga in GANTRY:
-        for en in ENERGY:
+    for ga in gantry_angles:
+        for en in energies:
             cnt+=1
             
             progress_bar(cnt, len(beams) )
@@ -344,15 +343,15 @@ def read_spot_diameters(directory, beams, GANTRY, ENERGY):
 
 
 
-def read_arc_radial_widths(directory, beams, GANTRY, ENERGY):
+def read_arc_radial_widths(gantry_angles, energies, directory, beams):
     """Retrieve entry spot "arc" (BEV-X) and "radial" (BEV-Y) widths 
     from entry spot csv file
     """
         
     results = {}
     cnt = -1
-    for ga in GANTRY:
-        for en in ENERGY:
+    for ga in gantry_angles:
+        for en in energies:
             cnt+=1
             
             progress_bar(cnt, len(beams) )
@@ -456,7 +455,7 @@ def sigma_angled_profile(spot_img, img_angle, pitch):
 
 
 
-def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
+def analyse_spot_profiles(gantry_angles, energies, directory, beams):
     """Returns sigma of spot in x,y of SPOT COORDINATE system 
     (from a profile taken at specified angle in IMAGE coords)
 
@@ -468,8 +467,8 @@ def analyse_spot_profiles(directory, beams, GANTRY, ENERGY):
 
     results = {}
     cnt=-1
-    for ga in GANTRY:
-        for en in ENERGY:    
+    for ga in gantry_angles:
+        for en in energies:    
             cnt+=1
             
             progress_bar(cnt, len(beams) )

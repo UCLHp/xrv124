@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_JUSTIFY
@@ -7,28 +8,24 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-import config
-
-GANTRY = config.GANTRY
-ENERGY = config.ENERGY
-
-
 
 ''' ## Temporary tolerances to be used
 
 Action/Suspension limits:
-Action limit: 		>1.0mm for at least 50% of energies for any given gantry angle;
-			>1.5mm for at least 5 energies at any gantry angle;
-			>2.0mm for any energy at any gantry angle.
+Action limit: >1.0mm for at least 50% of energies for any given gantry angle;
+			  >1.5mm for at least 5 energies at any gantry angle;
+			  >2.0mm for any energy at any gantry angle.
 Suspension limit:	>2.5mm for any energy at any gantry angle.
 '''
-
-
 
 # PyFPDF: https://www.blog.pythonlibrary.org/2018/06/05/creating-pdfs-with-pyfpdf-and-python/
 # Interactive PDFs with ReportLab: https://www.blog.pythonlibrary.org/2018/05/29/creating-interactive-pdf-forms-in-reportlab-with-python/
 # ReportLab user guide: https://www.reportlab.com/docs/reportlab-userguide.pdf
 
+
+def get_date():
+    """Return today's date"""
+    return str( datetime.date.today() )
 
 
 def get_total_displacement( shifts ):
@@ -42,9 +39,7 @@ def get_total_displacement( shifts ):
     return displacements
 
 
-
-
-def get_table_data(displacements):
+def get_table_data(gantry_angles, energies, displacements):
     """Method taking dicitonary of beam (GAxEy) and total displacement
     and formatting it for ReportLab PDF table"""
     
@@ -54,7 +49,7 @@ def get_table_data(displacements):
     line_1 = ['Gantry', '50% energies < 1mm', 'Less than 5 energies > 1.5mm', 'No energy > 2mm']
     data.append(line_1)
 
-    for ga in GANTRY:
+    for ga in gantry_angles:
         # Store beams that were out of certain tolerances
         gt_1 = []
         gt_1p5 = []
@@ -65,7 +60,7 @@ def get_table_data(displacements):
         data_line = ["NONE_ERROR"]*4   
         data_line[0] = str(ga)
 
-        for en in ENERGY:
+        for en in energies:
             k="GA"+str(ga)+"E"+str(en)
 
             if displacements[k] > 2.5:
@@ -93,7 +88,7 @@ def get_table_data(displacements):
             data_line[2] = "FAIL"
         else:
             data_line[2] = "pass"
-        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(ENERGY)/2.0:
+        if len(gt_1)+len(gt_1p5)+len(gt_2) >= len(energies)/2.0:
             #print("WARNING: 1.0mm Action Limit exceeded for GA={}\n".format(ga))
             #print( gt_1 + gt_1p5 + gt_2 + gt_2p5 )
             data_line[1]  = "FAIL"
@@ -107,12 +102,14 @@ def get_table_data(displacements):
 
 
 
-def summary_reportlab( shifts, images=None, output=None ):
+def summary_reportlab(gantry_angles,energies,op1,op2,shifts, acq_datetime, gantry_name, images=None, output=None ):
     """Print a pdf report of the beam shift results
 
     'shifts' input is a dictionary in form { "GA0E240":[xshift, yshift] }
     where x and y are in the image (hence BEV) coordinate system
     """
+    
+    curr_date = get_date()
 
     # Check if single image or list is provided
     images_to_plot = []
@@ -131,10 +128,10 @@ def summary_reportlab( shifts, images=None, output=None ):
         
 
     # Convert x,y shifts to total displacement
-    displacements = get_total_displacement( shifts )
+    displacements = get_total_displacement(shifts )
 
     # Data formatted for PDF table
-    table_data = get_table_data(displacements)
+    table_data = get_table_data(gantry_angles,energies,displacements)
 
 
     # Set up document
@@ -151,8 +148,17 @@ def summary_reportlab( shifts, images=None, output=None ):
     styles.add(ParagraphStyle(name='Indent', alignment=TA_JUSTIFY, leftIndent=20))
     styles.add(ParagraphStyle(name='Underline', alignment=TA_JUSTIFY, underlineWidth=1))
       
-    title = '<font size="15"><u> Logos XRV-124 monthly QA results </u></font>'
+    title = '<font size="14"><u> Logos XRV-124 monthly QA results</u></font>'
     Story.append(Paragraph(title, styles["Justify"]))
+    Story.append(Spacer(1, 10))
+    gantryline = '<font size="10">{}</font>'.format(gantry_name)
+    Story.append(Paragraph(gantryline, styles["Indent"]))
+    dateline_1 = '<font size="10">Acquisition date: {}</font>'.format(acq_datetime)
+    Story.append(Paragraph(dateline_1, styles["Indent"]))
+    dateline_2 = '<font size="10">Analysis date: {}</font>'.format(curr_date)
+    Story.append(Paragraph(dateline_2, styles["Indent"]))
+    operatorline = '<font size="10">Operators: {}, {}</font>'.format(op1,op2)
+    Story.append(Paragraph(operatorline, styles["Indent"]))
     Story.append(Spacer(1, 50))
 
 
