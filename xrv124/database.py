@@ -18,6 +18,7 @@ import config
 DB_PATH = config.PATH_TO_DB
 SESSION_TABLE = config.SESSION_TABLE 
 RESULTS_TABLE = config.RESULTS_TABLE
+PASSWORD = config.PASSWORD
 
 
 
@@ -66,7 +67,7 @@ def write_to_db(df,comment=""):
     
     conn=None  
     try:
-        new_connection = 'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=%s'%(DB_PATH)    
+        new_connection = 'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=%s;PWD=%s'%(DB_PATH,PASSWORD)    
         conn = pypyodbc.connect(new_connection)                 
     except:
         eg.msgbox("Could not connect to database; nothing written","WARNING")
@@ -80,18 +81,13 @@ def write_to_db(df,comment=""):
         if session_written:
             write_results_data(conn,df)
         
-
-    
-    
-    
-    
-    
-    
+ 
     
 
 def main():
     df = pd.read_csv(r"C:Desktop\db_results.csv")
     write_to_db(df)    
+    
     
     
 if __name__=="__main__":

@@ -1,8 +1,7 @@
 from os import listdir, mkdir
-from os.path import isfile, splitext, join, getctime
+from os.path import isfile, splitext, join
 import json
 import csv
-import datetime
 
 import pandas as pd
 
@@ -15,28 +14,23 @@ import gui
 import database as db
 
 
-
 TARGET = config.TARGET
 
 
-def get_acquisition_date(file):
-    """Return date of data acquisition from data file timestamp
-    
-    This only works on Windows OS
-    """
-    tt = getctime(file)
-    date = datetime.datetime.fromtimestamp(tt).date()
-    return str(date)
-
-
-def get_acquisition_time(file):
-    """Return time of data acquisition from data file timestamp
-    
-    This only works on Windows OS
-    """
-    tt = getctime(file)
-    time = datetime.datetime.fromtimestamp(tt).time()
-    return str(time)[:8]
+def get_acquisition_date_time(outputfile):
+    """Return date and time of data acquisition from Logos output.txt file"""
+    adate,atime="",""
+    with open(outputfile,"r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if "Time," in line and adate=="" and atime=="":
+                dt = line.split(",")[1].strip()
+                print("Acquired ",dt)
+                atime = dt.split()[0]
+                adate = dt.split()[1]    
+    month,day,year = adate.split("/")
+    adate_formatted = year+"-"+month+"-"+day
+    return adate_formatted,atime
 
 
 def get_filenames(directory):
@@ -44,7 +38,6 @@ def get_filenames(directory):
     """
     onlyfiles = [f for f in listdir(directory) if isfile(join(directory, f))]
     return onlyfiles
-
 
 
 def check_files(filenames,gantry_angles, energies):
@@ -69,7 +62,6 @@ def check_files(filenames,gantry_angles, energies):
         return True
     else:
         return False 
-
 
 
 def get_ordered_beams(filenames):
@@ -235,22 +227,20 @@ def main():
     filenames = get_filenames(directory)
     filesok = check_files(filenames, gantry_angles, energies) 
     
-    # Get acquisition date and time fromfirst file in directory
-    acq_date = get_acquisition_date( join(directory,filenames[0]) )
-    acq_time = get_acquisition_time( join(directory,filenames[0]) )
-    
+    # Get acquisition date and time from from Logos output.txt file
+    adate,atime=get_acquisition_date_time( join(directory,"output.txt"))
+
     # New directory for results
-    res_dir_name = gantry_name+" "+str(acq_date)
+    res_dir_name = gantry_name+" "+str(adate)
     result_dir = make_results_directory(outputdir,res_dir_name)
     print("Results will be printed to {}".format(result_dir))
     
     
-
     if filesok:
         print("Full data set found")
         beams = get_ordered_beams(filenames)
         full_analysis(gantry_angles, energies, operator1, operator2, 
-                      directory, beams, gantry_name, acq_date, acq_time,
+                      directory, beams, gantry_name, adate, atime,
                       comment, result_dir)
     else:
         msg = ("\nINCORRECT NUMBER OF FILES FOUND\n"

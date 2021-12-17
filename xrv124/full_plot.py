@@ -362,7 +362,7 @@ def plot_spot_diameters_by_energy(gantry_angles, energies, results, imgname=None
     by_label = dict( zip(labels,handles) )
     fig.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0.98,0.22), ncol=2, title="GA (degrees)" ) 
     fig.suptitle("Spot diameter (mm) vs GA", fontsize=16)
-    plt.xlabel("Gantry angle)")
+    plt.xlabel("Gantry angle")
     plt.ylabel("Diameter (mm)")
     if imgname is not None:
         fig.savefig(imgname, dpi=fig.dpi)
@@ -407,7 +407,7 @@ def plot_spot_sigmas(gantry_angles, energies, results, imgname=None, arc_radial=
         fig.suptitle("Spot arc/radial widths vs GA", fontsize=16)
     else:
         fig.suptitle("Spot sigmas (mm) vs GA", fontsize=16)
-    plt.xlabel("Gantry angle)")
+    plt.xlabel("Gantry angle")
     plt.ylabel("Diameter (mm)")
     if imgname is not None:
         fig.savefig(imgname, dpi=fig.dpi)
