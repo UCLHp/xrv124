@@ -1,5 +1,5 @@
 asteval==0.9.18
-certifi==2019.11.28
+certifi==2022.12.7
 cycler==0.10.0
 decorator==4.4.2
 easygui==0.98.1
