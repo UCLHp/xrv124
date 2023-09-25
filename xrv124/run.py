@@ -173,7 +173,7 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date,
                         join(result_dir,"shifts_polar.png"),
                         join(result_dir,"diameter_by_energy.png")                         
                        ],
-                output=join(result_dir,"Summary report.pdf")
+                output=join(result_dir,"{0} {1}.pdf".format(gantry_name,acq_date))
                 )
 
 
