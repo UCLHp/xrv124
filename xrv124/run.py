@@ -98,6 +98,8 @@ def full_analysis(gas, ens, op1, op2, directory, beams, gantry_name, acq_date,
                   acq_time, comment, outputdir):
     """Analsysis of full data set"""
     
+    db.test_db_connection()
+    
     acq_datetime = acq_date+" "+acq_time
      
     result_dir=outputdir
