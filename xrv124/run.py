@@ -68,7 +68,7 @@ def get_ordered_beams(filenames):
     """Return sorted, uniq file IDs for captured beams
     """
     num_names = [splitext(n)[0] for n in filenames if str.isdigit(splitext(n)[0]) ]
-    uniq = list( set(num_names) )
+    uniq = list( set(num_names) )    
     return sorted(uniq, key=lambda e: int(e))
 
 

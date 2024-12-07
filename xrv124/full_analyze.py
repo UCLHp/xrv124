@@ -476,7 +476,7 @@ def analyse_spot_profiles(gantry_angles, energies, directory, beams):
             k="GA"+str(ga)+"E"+str(en) 
             # Print which file corresponds to which beam
             #print("{},{}".format(beams[cnt],k))
-
+            
             entry, pitch = get_image_data( join(directory,beams[cnt])+".csv" ) 
 
             ## Angle profile=0 at GA=0 SPOT and BEV and IMAGE axes all match
