@@ -33,7 +33,7 @@ TARGET = [0,0,144.8]
 
 
 # Database info
-PATH_TO_DB = r"\\path\to\database.accdb"
+PATH_TO_DB = r"path\to\database.accdb"
 PASSWORD = "password"
 SESSION_TABLE = "xrv124session"
 RESULTS_TABLE = "xrv124results"
