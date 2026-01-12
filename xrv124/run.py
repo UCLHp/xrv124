@@ -23,8 +23,8 @@ def get_acquisition_date_time(outputfile):
     with open(outputfile,"r") as f:
         lines = f.readlines()
         for line in lines:
-            if "Time," in line and adate=="" and atime=="":
-                dt = line.split(",")[1].strip()
+            if "Time-Date:" in line and adate=="" and atime=="":
+                dt = line.split(",")[3].strip()
                 print("Acquired ",dt)
                 atime = dt.split()[0]
                 adate = dt.split()[1]    
